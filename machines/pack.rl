@@ -6,6 +6,8 @@
 
   include "pack_actions.rl";
 
+  ignored = (space | 0)*;
+
   count = digit >start_digit digit* @count;
 
   count_modifier = '*' %rest | count?;
@@ -13,7 +15,7 @@
 
   C = (('C' | 'c') modifier) %check_size %C;
 
-  main := (C >start space*)+ %done;
+  main := (C >start ignored)+ %done;
 
   write data;
   write init;
