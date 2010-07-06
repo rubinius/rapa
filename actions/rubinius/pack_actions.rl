@@ -29,14 +29,7 @@
   }
 
   action C {
-    for(; index < stop; index++) {
-      Object* x = get(state, index);
-      if(Integer* n = try_as<Integer>(x)) {
-        str.push_back(n->to_native() & 0xff);
-      } else {
-        return force_as<String>(Primitives::failure());
-      }
-    }
+    PACK_ELEMENTS(Integer, pack::integer, MASK_BYTE);
   }
 
   action fail {

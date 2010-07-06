@@ -7,13 +7,39 @@
 
 #include "vm.hpp"
 #include "object_utils.hpp"
+#include "on_stack.hpp"
 
 #include "builtin/array.hpp"
 #include "builtin/exception.hpp"
+#include "builtin/module.hpp"
+#include "builtin/object.hpp"
 #include "builtin/string.hpp"
 
 namespace rubinius {
-  String* Array::pack(STATE, String* directives) {
+  namespace pack {
+    static Object* integer(STATE, CallFrame* call_frame, Object* obj) {
+      Array* args = Array::create(state, 1);
+      args->set(state, 0, obj);
+
+      return G(rubinius)->send(state, call_frame, state->symbol("pack_to_int"), args);
+    }
+  }
+
+#define PACK_ELEMENTS(T, coerce, format)      \
+  for(; index < stop; index++) {              \
+    Object* item = self->get(state, index);   \
+    T* value = try_as<T>(item);               \
+    if(!value) {                              \
+      item = coerce(state, call_frame, item); \
+      if(!item) return 0;                     \
+      value = as<T>(item);                    \
+    }                                         \
+    str.push_back(format(value));             \
+  }
+
+#define MASK_BYTE(x) ((x)->to_native() & 0xff)
+
+  String* Array::pack(STATE, String* directives, CallFrame* call_frame) {
     // Ragel-specific variables
     std::string d(directives->c_str(), directives->size());
     const char *p  = d.c_str();
@@ -22,6 +48,9 @@ namespace rubinius {
     int cs;
 
     // pack-specific variables
+    Array* self = this;
+    OnStack<1> sv(state, self);
+
     size_t index = 0;
     size_t count = 0;
     size_t stop = 0;
