@@ -15,8 +15,9 @@
 namespace rubinius {
   String* Array::pack(STATE, String* directives) {
     // Ragel-specific variables
-    const char *p  = directives->c_str();
-    const char *pe = p + directives->size();
+    std::string d(directives->c_str(), directives->size());
+    const char *p  = d.c_str();
+    const char *pe = p + d.size();
     const char *eof = pe;
     int cs;
 
