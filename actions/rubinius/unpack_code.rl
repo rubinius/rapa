@@ -9,10 +9,47 @@
 #include "object_utils.hpp"
 
 #include "builtin/array.hpp"
+#include "builtin/exception.hpp"
 #include "builtin/string.hpp"
 
 namespace rubinius {
+
+#define UNPACK_ELEMENTS(format)                   \
+  for(; index < stop; count--, index += width) {  \
+    array->append(state, format(bytes + index));  \
+  }
+
+#define BYTE(p)  (Fixnum::from(*((signed char*)p)))
+
+#define UBYTE(p) (Fixnum::from(*((unsigned char*)p)))
+
   Array* String::unpack(STATE, String* directives) {
+    // Ragel-specific variables
+    const char *p  = directives->c_str();
+    const char *pe = p + directives->size();
+    const char *eof = pe;
+    int cs;
+
+    // pack-specific variables
+    uint8_t* bytes = byte_address();
+    size_t index = 0;
+    size_t stop = 0;
+    size_t width = 0;
+    int count = 0;
+    bool rest = false;
+    Array* array = Array::create(state, 0);
+
+%%{
+  machine unpack;
+
+  include "unpack.rl";
+
+}%%
+
+    if(unpack_first_final && unpack_error && unpack_en_main) {
+      // do nothing
+    }
+
     return force_as<Array>(Primitives::failure());
   }
 }
