@@ -5,6 +5,8 @@
  * vim: filetype=cpp
  */
 
+#include "vm/config.h"
+
 #include "vm.hpp"
 #include "object_utils.hpp"
 #include "on_stack.hpp"
@@ -34,10 +36,46 @@ namespace rubinius {
       if(!item) return 0;                     \
       value = as<T>(item);                    \
     }                                         \
-    str.push_back(format(value));             \
+    format(value);                            \
   }
 
-#define MASK_BYTE(x) ((x)->to_native() & 0xff)
+#define CONVERT_TO_INT(n, i)        \
+  if((n)->fixnum_p()) {             \
+    i = (int)STRIP_FIXNUM_TAG(n);   \
+  } else {                          \
+    i = as<Bignum>(n)->to_int();    \
+  }
+
+#define BYTE1(x)        ((x) & 0x000000ff)
+#define BYTE2(x)        (((x) & 0x0000ff00) >> 8)
+#define BYTE3(x)        (((x) & 0x00ff0000) >> 16)
+#define BYTE4(x)        (((x) & 0xff000000) >> 24)
+
+#ifdef RBX_LITTLE_ENDIAN
+# define MASK_32BITS     LE_MASK_32BITS
+#else
+# define MASK_32BITS     BE_MASK_32BITS
+#endif
+
+#define LE_MASK_32BITS(x)  {        \
+  int mask_32bit;                   \
+  CONVERT_TO_INT(x, mask_32bit);    \
+  str.push_back(BYTE1(mask_32bit)); \
+  str.push_back(BYTE2(mask_32bit)); \
+  str.push_back(BYTE3(mask_32bit)); \
+  str.push_back(BYTE4(mask_32bit)); \
+}
+
+#define BE_MASK_32BITS(x) {         \
+  int mask_32bit;                   \
+  CONVERT_TO_INT(x, mask_32bit);    \
+  str.push_back(BYTE4(mask_32bit)); \
+  str.push_back(BYTE3(mask_32bit)); \
+  str.push_back(BYTE2(mask_32bit)); \
+  str.push_back(BYTE1(mask_32bit)); \
+}
+
+#define MASK_BYTE(x)    str.push_back((x)->to_native() & 0xff)
 
   String* Array::pack(STATE, String* directives, CallFrame* call_frame) {
     // Ragel-specific variables
@@ -55,6 +93,7 @@ namespace rubinius {
     size_t count = 0;
     size_t stop = 0;
     bool rest = false;
+    bool platform = false;
     std::string str("");
 
 %%{

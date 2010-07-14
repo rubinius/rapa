@@ -7,6 +7,7 @@
   action start {
     count = 1;
     rest = false;
+    platform = false;
   }
 
   action start_digit {
@@ -21,6 +22,10 @@
     rest = true;
   }
 
+  action platform {
+    platform = true;
+  }
+
   action check_size {
     stop = rest ? size() : index + count;
     if(stop > size()) {
@@ -30,6 +35,10 @@
 
   action C {
     PACK_ELEMENTS(Integer, pack::integer, MASK_BYTE);
+  }
+
+  action I {
+    PACK_ELEMENTS(Integer, pack::integer, MASK_32BITS);
   }
 
   action fail {
