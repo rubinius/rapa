@@ -6,7 +6,7 @@ else
 end
 MACHINES  = DIR + "/machines"
 RUBINIUS  = DIR + "/actions/rubinius"
-RUBINIUS_RAGEL = "ragel -C -G2 -I #{MACHINES} -I #{RUBINIUS}"
+RUBINIUS_RAGEL = "ragel -C -G1 -I #{MACHINES} -I #{RUBINIUS}"
 
 # The Ragel generated line info is a mess. This just strips the
 # info so that any compile errors are reported directly from the
