@@ -12,10 +12,11 @@
 
   count_modifier = '*' %rest | count?;
   modifier = count_modifier | [_!] @non_native_error;
-  platform_modifier = [_!]? %platform count_modifier;
+  platform_modifier = ([_!] %platform)? count_modifier;
 
   S = (('S' | 's') platform_modifier) %check_size %S;
   I = (('I' | 'i') platform_modifier) %check_size %I;
+  L = (('L' | 'l') platform_modifier) %check_size %L;
 
   C = (('C' | 'c') modifier) %check_size %C;
   n = ('n' modifier) %check_size %n;
@@ -24,7 +25,7 @@
   V = ('V' modifier) %check_size %V;
   Q = (('Q' | 'q') modifier) %check_size %Q;
 
-  numerics = C | S | I | n | N | v | V | Q;
+  numerics = C | S | I | L | n | N | v | V | Q;
 
   main := (numerics >start ignored)+ %done;
 

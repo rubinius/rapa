@@ -27,15 +27,20 @@ namespace rubinius {
     }
   }
 
-#define CONVERT(T, v, m, n)                   \
-  if((n)->fixnum_p()) {                       \
-    v = (T)STRIP_FIXNUM_TAG(n);     \
-  } else {                                    \
-    v = as<Bignum>(n)->m();  \
+#define BITS_LONG   (RBX_SIZEOF_LONG * 8)
+#define BITS_64     (64)
+
+#define CONVERT(T, v, m, b, n)    \
+  if((n)->fixnum_p()) {           \
+    v = (T)STRIP_FIXNUM_TAG(n);   \
+  } else {                        \
+    Bignum* big = as<Bignum>(n);  \
+    big->verify_size(state, b);   \
+    v = big->m();                 \
   }
 
-#define CONVERT_TO_INT(n)   CONVERT(int, int_value, to_int, n)
-#define CONVERT_TO_LONG(n)  CONVERT(long long, long_value, to_long_long, n)
+#define CONVERT_TO_INT(n)   CONVERT(int, int_value, to_int, BITS_LONG, n)
+#define CONVERT_TO_LONG(n)  CONVERT(long long, long_value, to_long_long, BITS_64, n)
 
 #define PACK_INT_ELEMENTS(mask)   PACK_ELEMENTS(Integer, pack::integer, INT, mask)
 #define PACK_LONG_ELEMENTS(mask)  PACK_ELEMENTS(Integer, pack::integer, LONG, mask)
@@ -113,7 +118,8 @@ namespace rubinius {
   str.push_back(BYTE2(int_value)); \
   str.push_back(BYTE1(int_value)); \
 
-#define MASK_BYTE    str.push_back(BYTE1(int_value))
+#define MASK_BYTE                  \
+  str.push_back(BYTE1(int_value));
 
   String* Array::pack(STATE, String* directives, CallFrame* call_frame) {
     // Ragel-specific variables

@@ -45,6 +45,18 @@
     PACK_INT_ELEMENTS(MASK_32BITS);
   }
 
+  action L {
+    if(platform) {
+#if RBX_SIZEOF_LONG == 4
+      PACK_INT_ELEMENTS(MASK_32BITS);
+#else
+      PACK_LONG_ELEMENTS(MASK_64BITS);
+#endif
+    } else {
+      PACK_INT_ELEMENTS(MASK_32BITS);
+    }
+  }
+
   action n {
     PACK_INT_ELEMENTS(BE_MASK_16BITS);
   }
