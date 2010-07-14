@@ -15,9 +15,10 @@
   platform_modifier = [_!]? %platform count_modifier;
 
   C = (('C' | 'c') modifier) %check_size %C;
+  S = (('S' | 's') platform_modifier) %check_size %S;
   I = (('I' | 'i') platform_modifier) %check_size %I;
 
-  numerics = C | I;
+  numerics = C | S | I;
 
   main := (numerics >start ignored)+ %done;
 

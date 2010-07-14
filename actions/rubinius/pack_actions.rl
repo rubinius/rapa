@@ -34,11 +34,15 @@
   }
 
   action C {
-    PACK_ELEMENTS(Integer, pack::integer, MASK_BYTE);
+    PACK_ELEMENTS(Integer, pack::integer, INT, MASK_BYTE);
+  }
+
+  action S {
+    PACK_ELEMENTS(Integer, pack::integer, INT, MASK_16BITS);
   }
 
   action I {
-    PACK_ELEMENTS(Integer, pack::integer, MASK_32BITS);
+    PACK_ELEMENTS(Integer, pack::integer, INT, MASK_32BITS);
   }
 
   action fail {

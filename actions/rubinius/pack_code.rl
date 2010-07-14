@@ -27,23 +27,24 @@ namespace rubinius {
     }
   }
 
-#define PACK_ELEMENTS(T, coerce, format)      \
-  for(; index < stop; index++) {              \
-    Object* item = self->get(state, index);   \
-    T* value = try_as<T>(item);               \
-    if(!value) {                              \
-      item = coerce(state, call_frame, item); \
-      if(!item) return 0;                     \
-      value = as<T>(item);                    \
-    }                                         \
-    format(value);                            \
+#define PACK_ELEMENTS(T, coerce, size, format)  \
+  for(; index < stop; index++) {                \
+    Object* item = self->get(state, index);     \
+    T* value = try_as<T>(item);                 \
+    if(!value) {                                \
+      item = coerce(state, call_frame, item);   \
+      if(!item) return 0;                       \
+      value = as<T>(item);                      \
+    }                                           \
+    CONVERT_TO_ ## size(value);                 \
+    format;                                     \
   }
 
-#define CONVERT_TO_INT(n, i)        \
-  if((n)->fixnum_p()) {             \
-    i = (int)STRIP_FIXNUM_TAG(n);   \
-  } else {                          \
-    i = as<Bignum>(n)->to_int();    \
+#define CONVERT_TO_INT(n)                   \
+  if((n)->fixnum_p()) {                     \
+    int_value = (int)STRIP_FIXNUM_TAG(n);   \
+  } else {                                  \
+    int_value = as<Bignum>(n)->to_int();    \
   }
 
 #define BYTE1(x)        ((x) & 0x000000ff)
@@ -52,30 +53,34 @@ namespace rubinius {
 #define BYTE4(x)        (((x) & 0xff000000) >> 24)
 
 #ifdef RBX_LITTLE_ENDIAN
+# define MASK_16BITS     LE_MASK_16BITS
 # define MASK_32BITS     LE_MASK_32BITS
 #else
+# define MASK_16BITS     BE_MASK_16BITS
 # define MASK_32BITS     BE_MASK_32BITS
 #endif
 
-#define LE_MASK_32BITS(x)  {        \
-  int mask_32bit;                   \
-  CONVERT_TO_INT(x, mask_32bit);    \
-  str.push_back(BYTE1(mask_32bit)); \
-  str.push_back(BYTE2(mask_32bit)); \
-  str.push_back(BYTE3(mask_32bit)); \
-  str.push_back(BYTE4(mask_32bit)); \
-}
+#define LE_MASK_32BITS             \
+  str.push_back(BYTE1(int_value)); \
+  str.push_back(BYTE2(int_value)); \
+  str.push_back(BYTE3(int_value)); \
+  str.push_back(BYTE4(int_value)); \
 
-#define BE_MASK_32BITS(x) {         \
-  int mask_32bit;                   \
-  CONVERT_TO_INT(x, mask_32bit);    \
-  str.push_back(BYTE4(mask_32bit)); \
-  str.push_back(BYTE3(mask_32bit)); \
-  str.push_back(BYTE2(mask_32bit)); \
-  str.push_back(BYTE1(mask_32bit)); \
-}
+#define BE_MASK_32BITS             \
+  str.push_back(BYTE4(int_value)); \
+  str.push_back(BYTE3(int_value)); \
+  str.push_back(BYTE2(int_value)); \
+  str.push_back(BYTE1(int_value)); \
 
-#define MASK_BYTE(x)    str.push_back((x)->to_native() & 0xff)
+#define LE_MASK_16BITS             \
+  str.push_back(BYTE1(int_value)); \
+  str.push_back(BYTE2(int_value)); \
+
+#define BE_MASK_16BITS             \
+  str.push_back(BYTE2(int_value)); \
+  str.push_back(BYTE1(int_value)); \
+
+#define MASK_BYTE    str.push_back(BYTE1(int_value))
 
   String* Array::pack(STATE, String* directives, CallFrame* call_frame) {
     // Ragel-specific variables
@@ -94,6 +99,8 @@ namespace rubinius {
     size_t stop = 0;
     bool rest = false;
     bool platform = false;
+
+    int int_value = 0;
     std::string str("");
 
 %%{
