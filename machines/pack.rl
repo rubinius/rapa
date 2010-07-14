@@ -17,8 +17,12 @@
   C = (('C' | 'c') modifier) %check_size %C;
   S = (('S' | 's') platform_modifier) %check_size %S;
   I = (('I' | 'i') platform_modifier) %check_size %I;
+  n = ('n' modifier) %check_size %n;
+  N = ('N' modifier) %check_size %N;
+  v = ('v' modifier) %check_size %v;
+  V = ('V' modifier) %check_size %V;
 
-  numerics = C | S | I;
+  numerics = C | S | I | n | N | v | V;
 
   main := (numerics >start ignored)+ %done;
 

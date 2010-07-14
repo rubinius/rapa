@@ -34,15 +34,31 @@
   }
 
   action C {
-    PACK_ELEMENTS(Integer, pack::integer, INT, MASK_BYTE);
+    PACK_INT_ELEMENTS(MASK_BYTE);
   }
 
   action S {
-    PACK_ELEMENTS(Integer, pack::integer, INT, MASK_16BITS);
+    PACK_INT_ELEMENTS(MASK_16BITS);
   }
 
   action I {
-    PACK_ELEMENTS(Integer, pack::integer, INT, MASK_32BITS);
+    PACK_INT_ELEMENTS(MASK_32BITS);
+  }
+
+  action n {
+    PACK_INT_ELEMENTS(BE_MASK_16BITS);
+  }
+
+  action N {
+    PACK_INT_ELEMENTS(BE_MASK_32BITS);
+  }
+
+  action v {
+    PACK_INT_ELEMENTS(LE_MASK_16BITS);
+  }
+
+  action V {
+    PACK_INT_ELEMENTS(LE_MASK_32BITS);
   }
 
   action fail {

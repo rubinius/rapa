@@ -27,6 +27,8 @@ namespace rubinius {
     }
   }
 
+#define PACK_INT_ELEMENTS(mask)   PACK_ELEMENTS(Integer, pack::integer, INT, mask)
+
 #define PACK_ELEMENTS(T, coerce, size, format)  \
   for(; index < stop; index++) {                \
     Object* item = self->get(state, index);     \
