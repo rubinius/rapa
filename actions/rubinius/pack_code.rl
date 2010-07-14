@@ -27,7 +27,18 @@ namespace rubinius {
     }
   }
 
+#define CONVERT(T, v, m, n)                   \
+  if((n)->fixnum_p()) {                       \
+    v = (T)STRIP_FIXNUM_TAG(n);     \
+  } else {                                    \
+    v = as<Bignum>(n)->m();  \
+  }
+
+#define CONVERT_TO_INT(n)   CONVERT(int, int_value, to_int, n)
+#define CONVERT_TO_LONG(n)  CONVERT(long long, long_value, to_long_long, n)
+
 #define PACK_INT_ELEMENTS(mask)   PACK_ELEMENTS(Integer, pack::integer, INT, mask)
+#define PACK_LONG_ELEMENTS(mask)  PACK_ELEMENTS(Integer, pack::integer, LONG, mask)
 
 #define PACK_ELEMENTS(T, coerce, size, format)  \
   for(; index < stop; index++) {                \
@@ -42,25 +53,45 @@ namespace rubinius {
     format;                                     \
   }
 
-#define CONVERT_TO_INT(n)                   \
-  if((n)->fixnum_p()) {                     \
-    int_value = (int)STRIP_FIXNUM_TAG(n);   \
-  } else {                                  \
-    int_value = as<Bignum>(n)->to_int();    \
-  }
+#define BYTE1(x)        (((x) & 0x00000000000000ff))
+#define BYTE2(x)        (((x) & 0x000000000000ff00) >> 8)
+#define BYTE3(x)        (((x) & 0x0000000000ff0000) >> 16)
+#define BYTE4(x)        (((x) & 0x00000000ff000000) >> 24)
 
-#define BYTE1(x)        ((x) & 0x000000ff)
-#define BYTE2(x)        (((x) & 0x0000ff00) >> 8)
-#define BYTE3(x)        (((x) & 0x00ff0000) >> 16)
-#define BYTE4(x)        (((x) & 0xff000000) >> 24)
+#define BYTE5(x)        (((x) & 0x000000ff00000000LL) >> 32)
+#define BYTE6(x)        (((x) & 0x0000ff0000000000LL) >> 40)
+#define BYTE7(x)        (((x) & 0x00ff000000000000LL) >> 48)
+#define BYTE8(x)        (((x) & 0xff00000000000000LL) >> 56)
 
 #ifdef RBX_LITTLE_ENDIAN
 # define MASK_16BITS     LE_MASK_16BITS
 # define MASK_32BITS     LE_MASK_32BITS
+# define MASK_64BITS     LE_MASK_64BITS
 #else
 # define MASK_16BITS     BE_MASK_16BITS
 # define MASK_32BITS     BE_MASK_32BITS
+# define MASK_64BITS     BE_MASK_64BITS
 #endif
+
+#define LE_MASK_64BITS              \
+  str.push_back(BYTE1(long_value)); \
+  str.push_back(BYTE2(long_value)); \
+  str.push_back(BYTE3(long_value)); \
+  str.push_back(BYTE4(long_value)); \
+  str.push_back(BYTE5(long_value)); \
+  str.push_back(BYTE6(long_value)); \
+  str.push_back(BYTE7(long_value)); \
+  str.push_back(BYTE8(long_value)); \
+
+#define BE_MASK_64BITS              \
+  str.push_back(BYTE8(long_value)); \
+  str.push_back(BYTE7(long_value)); \
+  str.push_back(BYTE6(long_value)); \
+  str.push_back(BYTE5(long_value)); \
+  str.push_back(BYTE4(long_value)); \
+  str.push_back(BYTE3(long_value)); \
+  str.push_back(BYTE2(long_value)); \
+  str.push_back(BYTE1(long_value)); \
 
 #define LE_MASK_32BITS             \
   str.push_back(BYTE1(int_value)); \
@@ -103,6 +134,7 @@ namespace rubinius {
     bool platform = false;
 
     int int_value = 0;
+    long long long_value = 0;
     std::string str("");
 
 %%{

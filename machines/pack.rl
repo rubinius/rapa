@@ -14,15 +14,17 @@
   modifier = count_modifier | [_!] @non_native_error;
   platform_modifier = [_!]? %platform count_modifier;
 
-  C = (('C' | 'c') modifier) %check_size %C;
   S = (('S' | 's') platform_modifier) %check_size %S;
   I = (('I' | 'i') platform_modifier) %check_size %I;
+
+  C = (('C' | 'c') modifier) %check_size %C;
   n = ('n' modifier) %check_size %n;
   N = ('N' modifier) %check_size %N;
   v = ('v' modifier) %check_size %v;
   V = ('V' modifier) %check_size %V;
+  Q = (('Q' | 'q') modifier) %check_size %Q;
 
-  numerics = C | S | I | n | N | v | V;
+  numerics = C | S | I | n | N | v | V | Q;
 
   main := (numerics >start ignored)+ %done;
 

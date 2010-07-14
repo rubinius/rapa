@@ -61,6 +61,10 @@
     PACK_INT_ELEMENTS(LE_MASK_32BITS);
   }
 
+  action Q {
+    PACK_LONG_ELEMENTS(MASK_64BITS);
+  }
+
   action fail {
     return force_as<String>(Primitives::failure());
   }
