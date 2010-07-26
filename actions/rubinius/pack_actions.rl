@@ -92,6 +92,16 @@
     str = str.substr(0, str.size() - count);
   }
 
+  action at {
+    if(rest) count = 1;
+
+    if(count > str.size()) {
+      str.append(count - str.size(), '\0');
+    } else {
+      str = str.substr(0, count);
+    }
+  }
+
   action fail {
     return force_as<String>(Primitives::failure());
   }
