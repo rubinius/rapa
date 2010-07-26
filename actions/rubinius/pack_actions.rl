@@ -92,6 +92,12 @@
     str = str.substr(0, str.size() - count);
   }
 
+  action x {
+    if(rest) count = 0;
+
+    str.append(count, '\0');
+  }
+
   action at {
     if(rest) count = 1;
 

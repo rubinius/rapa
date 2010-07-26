@@ -26,10 +26,11 @@
   Q = (('Q' | 'q') modifier) %check_size %Q;
 
   X = ('X' modifier) %X;
+  x = ('x' modifier) %x;
   at = ('@' modifier) %at;
 
   integers = C | S | I | L | n | N | v | V | Q;
-  moves = X | at;
+  moves = X | x | at;
 
   directives = integers | moves;
 
