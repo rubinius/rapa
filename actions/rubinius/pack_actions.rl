@@ -77,6 +77,21 @@
     PACK_LONG_ELEMENTS(MASK_64BITS);
   }
 
+  action X {
+#define INVALID_MOVE_ERROR_SIZE 48
+
+    if(rest) count = 0;
+
+    if(count > str.size()) {
+      char invalid_move_msg[INVALID_MOVE_ERROR_SIZE];
+      snprintf(invalid_move_msg, INVALID_MOVE_ERROR_SIZE,
+               "X%ld request exceeds length of string", count);
+      Exception::argument_error(state, invalid_move_msg);
+    }
+
+    str = str.substr(0, str.size() - count);
+  }
+
   action fail {
     return force_as<String>(Primitives::failure());
   }

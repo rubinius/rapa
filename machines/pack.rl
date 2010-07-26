@@ -25,9 +25,14 @@
   V = ('V' modifier) %check_size %V;
   Q = (('Q' | 'q') modifier) %check_size %Q;
 
-  numerics = C | S | I | L | n | N | v | V | Q;
+  X = ('X' modifier) %X;
 
-  main := (numerics >start ignored)+ %done;
+  integers = C | S | I | L | n | N | v | V | Q;
+  moves = X;
+
+  directives = integers | moves;
+
+  main := (directives >start ignored)+ %done;
 
   write data;
   write init;
