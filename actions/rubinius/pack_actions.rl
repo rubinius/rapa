@@ -85,7 +85,7 @@
     if(count > str.size()) {
       char invalid_move_msg[INVALID_MOVE_ERROR_SIZE];
       snprintf(invalid_move_msg, INVALID_MOVE_ERROR_SIZE,
-               "X%ld request exceeds length of string", count);
+               "X%d exceeds length of string", (int)count);
       Exception::argument_error(state, invalid_move_msg);
     }
 
