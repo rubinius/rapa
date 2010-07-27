@@ -7,6 +7,7 @@
   action start {
     count = 1;
     rest = false;
+    platform = false;
   }
 
   action start_digit {
@@ -22,8 +23,16 @@
     rest = true;
   }
 
+  action platform {
+    platform = true;
+  }
+
   action byte_width {
     width = 1;
+  }
+
+  action short_width {
+    width = 2;
   }
 
   action set_stop {
@@ -41,11 +50,19 @@
   }
 
   action C {
-    UNPACK_ELEMENTS(UBYTE);
+    UNPACK_ELEMENTS(FIXNUM, UBYTE);
   }
 
   action c {
-    UNPACK_ELEMENTS(BYTE);
+    UNPACK_ELEMENTS(FIXNUM, SBYTE);
+  }
+
+  action S {
+    UNPACK_ELEMENTS(FIXNUM, U16BITS);
+  }
+
+  action s {
+    UNPACK_ELEMENTS(FIXNUM, S16BITS);
   }
 
   action non_native_error {

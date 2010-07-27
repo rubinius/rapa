@@ -7,6 +7,7 @@
 
 #include "vm.hpp"
 #include "object_utils.hpp"
+#include "vm/config.h"
 
 #include "builtin/array.hpp"
 #include "builtin/exception.hpp"
@@ -14,14 +15,34 @@
 
 namespace rubinius {
 
-#define UNPACK_ELEMENTS(format)                   \
-  for(; index < stop; count--, index += width) {  \
-    array->append(state, format(bytes + index));  \
+#define UNPACK_ELEMENTS(format, bits)                   \
+  for(; index < stop; count--, index += width) {        \
+    array->append(state, format(bits(bytes + index)));  \
   }
 
-#define BYTE(p)  (Fixnum::from(*((signed char*)p)))
+#define FIXNUM(b)         (Fixnum::from(b))
+#define INTEGER(b)        (Integer::from(state, b))
 
-#define UBYTE(p) (Fixnum::from(*((unsigned char*)p)))
+#define BYTE(p, n, m)     ((*(((uint8_t*)(p))+n)) << (m*8))
+
+#define SBYTE(p)          ((int8_t)BYTE(p, 0, 0))
+#define UBYTE(p)          ((uint8_t)BYTE(p, 0, 0))
+
+#define LE_16BITS(p)      (BYTE(p, 0, 0) | BYTE(p, 1, 1))
+#define LE_S16BITS(p)     ((int16_t)LE_16BITS(p))
+#define LE_U16BITS(p)     ((uint16_t)LE_16BITS(p))
+
+#define BE_16BITS(p)      (BYTE(p, 0, 1) | BYTE(p, 1, 0))
+#define BE_S16BITS(p)     ((int16_t)BE_16BITS(p))
+#define BE_U16BITS(p)     ((uint16_t)BE_16BITS(p))
+
+#ifdef RBX_LITTLE_ENDIAN
+# define S16BITS           LE_S16BITS
+# define U16BITS           LE_U16BITS
+#else
+# define S16BITS           BE_S16BITS
+# define U16BITS           BE_U16BITS
+#endif
 
   Array* String::unpack(STATE, String* directives) {
     // Ragel-specific variables
@@ -37,6 +58,7 @@ namespace rubinius {
     size_t width = 0;
     int count = 0;
     bool rest = false;
+    bool platform = false;
     Array* array = Array::create(state, 0);
 
 %%{
