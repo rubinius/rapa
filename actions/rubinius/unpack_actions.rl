@@ -57,6 +57,14 @@
     UNPACK_ELEMENTS(FIXNUM, SBYTE);
   }
 
+  action n {
+    UNPACK_ELEMENTS(FIXNUM, BE_U16BITS);
+  }
+
+  action v {
+    UNPACK_ELEMENTS(FIXNUM, LE_U16BITS);
+  }
+
   action S {
     UNPACK_ELEMENTS(FIXNUM, U16BITS);
   }

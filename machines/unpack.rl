@@ -19,8 +19,10 @@
 
   C = ('C' modifier) %byte_width %set_stop %C %extra;
   c = ('c' modifier) %byte_width %set_stop %c %extra;
+  n = ('n' modifier) %short_width %set_stop %n %extra;
+  v = ('v' modifier) %short_width %set_stop %v %extra;
 
-  integers = C | c | S | s;
+  integers = C | c | S | s | n | v;
 
   directives = integers;
 
