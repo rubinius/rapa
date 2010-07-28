@@ -26,13 +26,18 @@
   Q = (('Q' | 'q') modifier) %check_size %Q;
 
   X = ('X' modifier) %X;
-  x = ('x' modifier) %x;
   at = ('@' modifier) %at;
 
-  integers = C | S | I | L | n | N | v | V | Q;
-  moves = X | x | at;
+  A = ('A' modifier) %string_check_size %A;
+  a = ('a' modifier) %string_check_size %a;
+  x = ('x' modifier) %x;
+  Z = ('Z' modifier) %string_check_size %Z;
 
-  directives = integers | moves;
+  integers = C | S | I | L | n | N | v | V | Q;
+  strings = A | a | x | Z;
+  moves = X | at;
+
+  directives = integers | strings | moves;
 
   main := (directives >start ignored)+ %done;
 

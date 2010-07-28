@@ -33,6 +33,12 @@
     }
   }
 
+  action string_check_size {
+    if(index >= size()) {
+      Exception::argument_error(state, "too few arguments");
+    }
+  }
+
   action C {
     PACK_INT_ELEMENTS(MASK_BYTE);
   }
@@ -108,6 +114,25 @@
     }
   }
 
+  action A {
+    PACK_STRING_ELEMENT(pack::string_or_nil);
+    if(count > 0) str.append(count, ' ');
+  }
+
+  action a {
+    PACK_STRING_ELEMENT(pack::string_or_nil);
+    if(count > 0) str.append(count, '\0');
+  }
+
+  action Z {
+    PACK_STRING_ELEMENT(pack::string_or_nil);
+    if(rest) {
+      if(count == 0) str.append(1, '\0');
+    } else {
+      if(count > 0) str.append(count, '\0');
+    }
+  }
+
   action fail {
     return force_as<String>(Primitives::failure());
   }
@@ -122,6 +147,11 @@
   }
 
   action done {
-    return String::create(state, str.c_str(), str.size());
+    String* result = String::create(state, str.c_str(), str.size());
+    if(tainted) {
+      result->taint(state);
+      tainted = false;
+    }
+    return result;
   }
 }%%

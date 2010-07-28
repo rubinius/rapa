@@ -25,6 +25,17 @@ namespace rubinius {
 
       return G(rubinius)->send(state, call_frame, state->symbol("pack_to_int"), args);
     }
+
+    static String* string_or_nil(STATE, CallFrame* call_frame, Object* obj) {
+      Array* args = Array::create(state, 1);
+      args->set(state, 0, obj);
+
+      Object* result = G(rubinius)->send(state, call_frame,
+            state->symbol("pack_to_str_or_nil"), args);
+
+      if(!result) return 0;
+      return as<String>(result);
+    }
   }
 
 #define BITS_LONG   (RBX_SIZEOF_LONG * 8)
@@ -57,6 +68,26 @@ namespace rubinius {
     CONVERT_TO_ ## size(value);                 \
     format;                                     \
   }
+
+#define PACK_STRING_ELEMENT(coerce)  {                      \
+  Object* item = self->get(state, index);                   \
+  String* value = try_as<String>(item);                     \
+  if(!value) {                                              \
+    value = coerce(state, call_frame, item);                \
+    if(!value) return 0;                                    \
+  }                                                         \
+  if(RTEST(value->tainted_p(state))) tainted = true;        \
+  size_t size = value->size();                              \
+  if(rest) count = size;                                    \
+  if(count <= size) {                                       \
+    str.append((const char*)value->byte_address(), count);  \
+    count = 0;                                              \
+  } else {                                                  \
+    str.append((const char*)value->byte_address(), size);   \
+    count = count - size;                                   \
+  }                                                         \
+  index++;                                                  \
+}
 
 #define BYTE1(x)        (((x) & 0x00000000000000ff))
 #define BYTE2(x)        (((x) & 0x000000000000ff00) >> 8)
@@ -138,6 +169,7 @@ namespace rubinius {
     size_t stop = 0;
     bool rest = false;
     bool platform = false;
+    bool tainted = false;
 
     int int_value = 0;
     long long long_value = 0;
