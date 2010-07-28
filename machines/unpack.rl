@@ -30,9 +30,14 @@
   Q = ('Q' modifier) %long_width %set_stop %Q %extra;
   q = ('q' modifier) %long_width %set_stop %q %extra;
 
-  integers = C | c | S | s | I | i | L | l | N | n | V | v | Q | q;
+  X = ('X' modifier) %X %check_bounds;
+  x = ('x' modifier) %x %check_bounds;
+  at = ('@' >zero_count modifier) %at %check_bounds;
 
-  directives = integers;
+  integers = C | c | S | s | I | i | L | l | N | n | V | v | Q | q;
+  moves = X | x | at;
+
+  directives = integers | moves;
 
   main := (directives >start ignored)+ %done;
 

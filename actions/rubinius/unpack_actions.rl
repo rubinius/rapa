@@ -23,6 +23,10 @@
     rest = true;
   }
 
+  action zero_count {
+    count = 0;
+  }
+
   action platform {
     platform = true;
   }
@@ -139,6 +143,36 @@
 
   action q {
     UNPACK_ELEMENTS(INTEGER, S64BITS);
+  }
+
+  action X {
+    if(rest) count = size() - index;
+    index -= count;
+  }
+
+  action x {
+    if(rest) {
+      index = size();
+    } else {
+      index += count;
+    }
+  }
+
+  action at {
+    if(!rest) {
+      index = count;
+    }
+  }
+
+  action check_bounds {
+#define OOB_ERROR_SIZE 20
+
+    if(index < 0 || index > size()) {
+      char oob_error_msg[OOB_ERROR_SIZE];
+      snprintf(oob_error_msg, OOB_ERROR_SIZE,
+               "%c outside of string", *p);
+      Exception::argument_error(state, oob_error_msg);
+    }
   }
 
   action non_native_error {
