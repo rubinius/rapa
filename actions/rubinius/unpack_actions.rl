@@ -35,6 +35,26 @@
     width = 2;
   }
 
+  action int_width {
+    width = 4;
+  }
+
+  action long_width {
+    width = 8;
+  }
+
+  action platform_width {
+    if(platform) {
+#if RBX_SIZEOF_LONG == 4
+      width = 4;
+#else
+      width = 8;
+#endif
+    } else {
+      width = 4;
+    }
+  }
+
   action set_stop {
     stop = rest ? size() + 1 : index + width * count;
     if(stop > size()) {
@@ -57,20 +77,68 @@
     UNPACK_ELEMENTS(FIXNUM, SBYTE);
   }
 
-  action n {
-    UNPACK_ELEMENTS(FIXNUM, BE_U16BITS);
-  }
-
-  action v {
-    UNPACK_ELEMENTS(FIXNUM, LE_U16BITS);
-  }
-
   action S {
     UNPACK_ELEMENTS(FIXNUM, U16BITS);
   }
 
   action s {
     UNPACK_ELEMENTS(FIXNUM, S16BITS);
+  }
+
+  action I {
+    UNPACK_ELEMENTS(INTEGER, U32BITS);
+  }
+
+  action i {
+    UNPACK_ELEMENTS(INTEGER, S32BITS);
+  }
+
+  action L {
+    if(platform) {
+#if RBX_SIZEOF_LONG == 4
+      UNPACK_ELEMENTS(INTEGER, U32BITS);
+#else
+      UNPACK_ELEMENTS(INTEGER, U64BITS);
+#endif
+    } else {
+      UNPACK_ELEMENTS(INTEGER, U32BITS);
+    }
+  }
+
+  action l {
+    if(platform) {
+#if RBX_SIZEOF_LONG == 4
+      UNPACK_ELEMENTS(INTEGER, S32BITS);
+#else
+      UNPACK_ELEMENTS(INTEGER, S64BITS);
+#endif
+    } else {
+      UNPACK_ELEMENTS(INTEGER, S32BITS);
+    }
+  }
+
+  action N {
+    UNPACK_ELEMENTS(INTEGER, BE_U32BITS);
+  }
+
+  action n {
+    UNPACK_ELEMENTS(FIXNUM, BE_U16BITS);
+  }
+
+  action V {
+    UNPACK_ELEMENTS(INTEGER, LE_U32BITS);
+  }
+
+  action v {
+    UNPACK_ELEMENTS(FIXNUM, LE_U16BITS);
+  }
+
+  action Q {
+    UNPACK_ELEMENTS(INTEGER, U64BITS);
+  }
+
+  action q {
+    UNPACK_ELEMENTS(INTEGER, S64BITS);
   }
 
   action non_native_error {

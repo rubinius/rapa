@@ -15,6 +15,30 @@
 
 namespace rubinius {
 
+  namespace unpack {
+    uint16_t swap16(uint16_t x) {
+      return ((((x)&0xff)<<8) | (((x)>>8)&0xff));
+    }
+
+    uint32_t swap32(uint32_t x) {
+      return ((((x)&0xff)<<24)
+             |(((x)>>24)&0xff)
+             |(((x)&0x0000ff00)<<8)
+             |(((x)&0x00ff0000)>>8));
+    }
+
+    uint64_t swap64(uint64_t x) {
+      return ((((x)&0x00000000000000ffLL)<<56)
+             |(((x)&0xff00000000000000LL)>>56)
+             |(((x)&0x000000000000ff00LL)<<40)
+             |(((x)&0x00ff000000000000LL)>>40)
+             |(((x)&0x0000000000ff0000LL)<<24)
+             |(((x)&0x0000ff0000000000LL)>>24)
+             |(((x)&0x00000000ff000000LL)<<8)
+             |(((x)&0x000000ff00000000LL)>>8));
+    }
+  }
+
 #define UNPACK_ELEMENTS(format, bits)                   \
   for(; index < stop; count--, index += width) {        \
     array->append(state, format(bits(bytes + index)));  \
@@ -23,25 +47,46 @@ namespace rubinius {
 #define FIXNUM(b)         (Fixnum::from(b))
 #define INTEGER(b)        (Integer::from(state, b))
 
-#define BYTE(p, n, m)     ((*(((uint8_t*)(p))+n)) << (m*8))
+#define SBYTE(p)          (*(int8_t*)(p))
+#define UBYTE(p)          (*(uint8_t*)(p))
 
-#define SBYTE(p)          ((int8_t)BYTE(p, 0, 0))
-#define UBYTE(p)          ((uint8_t)BYTE(p, 0, 0))
+#define S16BITS(p)        (*(int16_t*)(p))
+#define U16BITS(p)        (*(uint16_t*)(p))
 
-#define LE_16BITS(p)      (BYTE(p, 0, 0) | BYTE(p, 1, 1))
-#define LE_S16BITS(p)     ((int16_t)LE_16BITS(p))
-#define LE_U16BITS(p)     ((uint16_t)LE_16BITS(p))
+#define S32BITS(p)        (*(int32_t*)(p))
+#define U32BITS(p)        (*(uint32_t*)(p))
 
-#define BE_16BITS(p)      (BYTE(p, 0, 1) | BYTE(p, 1, 0))
-#define BE_S16BITS(p)     ((int16_t)BE_16BITS(p))
-#define BE_U16BITS(p)     ((uint16_t)BE_16BITS(p))
+#define S64BITS(p)        (*(int64_t*)(p))
+#define U64BITS(p)        (*(uint64_t*)(p))
 
 #ifdef RBX_LITTLE_ENDIAN
-# define S16BITS           LE_S16BITS
-# define U16BITS           LE_U16BITS
+# define LE_S16BITS(p)     (S16BITS(p))
+# define LE_U16BITS(p)     (U16BITS(p))
+# define LE_S32BITS(p)     (S32BITS(p))
+# define LE_U32BITS(p)     (U32BITS(p))
+# define LE_S64BITS(p)     (S64BITS(p))
+# define LE_U64BITS(p)     (U64BITS(p))
+
+# define BE_S16BITS(p)     ((int16_t)(unpack::swap16(U16BITS(p))))
+# define BE_U16BITS(p)     ((uint16_t)(unpack::swap16(U16BITS(p))))
+# define BE_S32BITS(p)     ((int32_t)(unpack::swap32(U32BITS(p))))
+# define BE_U32BITS(p)     ((uint32_t)(unpack::swap32(U32BITS(p))))
+# define BE_S64BITS(p)     ((int64_t)(unpack::swap64(U64BITS(p))))
+# define BE_U64BITS(p)     ((uint64_t)(unpack::swap64(U64BITS(p))))
 #else
-# define S16BITS           BE_S16BITS
-# define U16BITS           BE_U16BITS
+# define LE_S16BITS(p)     ((int16_t)(unpack::swap16(U16BITS(p))))
+# define LE_U16BITS(p)     ((uint16_t)(unpack::swap16(U16BITS(p))))
+# define LE_S32BITS(p)     ((int32_t)(unpack::swap32(U32BITS(p))))
+# define LE_U32BITS(p)     ((uint32_t)(unpack::swap32(U32BITS(p))))
+# define LE_S64BITS(p)     ((int64_t)(unpack::swap64(U64BITS(p))))
+# define LE_U64BITS(p)     ((uint64_t)(unpack::swap64(U64BITS(p))))
+
+# define BE_S16BITS(p)     (S16BITS(p))
+# define BE_U16BITS(p)     (U16BITS(p))
+# define BE_S32BITS(p)     (S32BITS(p))
+# define BE_U32BITS(p)     (U32BITS(p))
+# define BE_S64BITS(p)     (S64BITS(p))
+# define BE_U64BITS(p)     (U64BITS(p))
 #endif
 
   Array* String::unpack(STATE, String* directives) {

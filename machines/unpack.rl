@@ -16,13 +16,21 @@
 
   S = ('S' platform_modifier) %short_width %set_stop %S %extra;
   s = ('s' platform_modifier) %short_width %set_stop %s %extra;
+  I = ('I' platform_modifier) %int_width %set_stop %I %extra;
+  i = ('i' platform_modifier) %int_width %set_stop %i %extra;
+  L = ('L' platform_modifier) %platform_width %set_stop %L %extra;
+  l = ('l' platform_modifier) %platform_width %set_stop %l %extra;
 
   C = ('C' modifier) %byte_width %set_stop %C %extra;
   c = ('c' modifier) %byte_width %set_stop %c %extra;
+  N = ('N' modifier) %int_width %set_stop %N %extra;
   n = ('n' modifier) %short_width %set_stop %n %extra;
+  V = ('V' modifier) %int_width %set_stop %V %extra;
   v = ('v' modifier) %short_width %set_stop %v %extra;
+  Q = ('Q' modifier) %long_width %set_stop %Q %extra;
+  q = ('q' modifier) %long_width %set_stop %q %extra;
 
-  integers = C | c | S | s | n | v;
+  integers = C | c | S | s | I | i | L | l | N | n | V | v | Q | q;
 
   directives = integers;
 
