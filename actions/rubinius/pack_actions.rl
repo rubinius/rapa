@@ -95,7 +95,7 @@
       Exception::argument_error(state, invalid_move_msg);
     }
 
-    str = str.substr(0, str.size() - count);
+    str.resize(str.size() - count);
   }
 
   action x {
