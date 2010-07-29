@@ -110,7 +110,7 @@
     if(count > str.size()) {
       str.append(count - str.size(), '\0');
     } else {
-      str = str.substr(0, count);
+      str.resize(count);
     }
   }
 
