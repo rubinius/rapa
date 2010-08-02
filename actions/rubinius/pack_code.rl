@@ -13,6 +13,7 @@
 
 #include "builtin/array.hpp"
 #include "builtin/exception.hpp"
+#include "builtin/float.hpp"
 #include "builtin/module.hpp"
 #include "builtin/object.hpp"
 #include "builtin/string.hpp"
@@ -36,25 +37,94 @@ namespace rubinius {
       if(!result) return 0;
       return as<String>(result);
     }
+
+    static Object* float_t(STATE, CallFrame* call_frame, Object* obj) {
+      Array* args = Array::create(state, 1);
+      args->set(state, 0, obj);
+
+      return G(rubinius)->send(state, call_frame, state->symbol("pack_to_float"), args);
+    }
+
+    uint16_t swap16(uint16_t x) {
+      return (((x & 0x00ff)<<8) | ((x & 0xff00)>>8));
+    }
+
+    uint32_t swap32(uint32_t x) {
+      return (((x & 0x000000ff) << 24)
+             |((x & 0xff000000) >> 24)
+             |((x & 0x0000ff00) << 8)
+             |((x & 0x00ff0000) >> 8));
+    }
+
+    uint64_t swap64(uint64_t x) {
+      return (((x & 0x00000000000000ffLL) << 56)
+             |((x & 0xff00000000000000LL) >> 56)
+             |((x & 0x000000000000ff00LL) << 40)
+             |((x & 0x00ff000000000000LL) >> 40)
+             |((x & 0x0000000000ff0000LL) << 24)
+             |((x & 0x0000ff0000000000LL) >> 24)
+             |((x & 0x00000000ff000000LL) << 8)
+             |((x & 0x000000ff00000000LL) >> 8));
+    }
+
+    static void swapf(std::string& str, float value) {
+      uint32_t x = swap32(*(uint32_t*)(&value));
+
+      str.append((const char*)&x, sizeof(uint32_t));
+    }
+
+    static void swapd(std::string& str, double value) {
+      uint64_t x = swap64(*(uint64_t*)(&value));
+
+      str.append((const char*)&x, sizeof(uint64_t));
+    }
+
+    static void double_element(std::string& str, double value) {
+      str.append((const char*)&value, sizeof(double));
+    }
+
+    static void float_element(std::string& str, float value) {
+      str.append((const char*)&value, sizeof(float));
+    }
   }
 
 #define BITS_LONG   (RBX_SIZEOF_LONG * 8)
 #define BITS_64     (64)
 
-#define CONVERT(T, v, m, b, n)    \
-  if((n)->fixnum_p()) {           \
-    v = (T)STRIP_FIXNUM_TAG(n);   \
-  } else {                        \
-    Bignum* big = as<Bignum>(n);  \
-    big->verify_size(state, b);   \
-    v = big->m();                 \
+#define CONVERT_INTEGER(T, v, m, b, n)    \
+  if((n)->fixnum_p()) {                   \
+    v = (T)STRIP_FIXNUM_TAG(n);           \
+  } else {                                \
+    Bignum* big = as<Bignum>(n);          \
+    big->verify_size(state, b);           \
+    v = big->m();                         \
   }
 
-#define CONVERT_TO_INT(n)   CONVERT(int, int_value, to_int, BITS_LONG, n)
-#define CONVERT_TO_LONG(n)  CONVERT(long long, long_value, to_long_long, BITS_64, n)
+#define CONVERT_TO_INT(n)   CONVERT_INTEGER(int, int_value, to_int, BITS_LONG, n)
+#define CONVERT_TO_LONG(n)  CONVERT_INTEGER(long long, long_value, to_long_long, BITS_64, n)
 
 #define PACK_INT_ELEMENTS(mask)   PACK_ELEMENTS(Integer, pack::integer, INT, mask)
 #define PACK_LONG_ELEMENTS(mask)  PACK_ELEMENTS(Integer, pack::integer, LONG, mask)
+
+#define pack_float_elements(format)   pack_elements(Float, pack::float_t, format)
+
+#define pack_double_le                pack_float_elements(pack_double_element_le)
+#define pack_double_be                pack_float_elements(pack_double_element_be)
+
+#define pack_float_le                 pack_float_elements(pack_float_element_le)
+#define pack_float_be                 pack_float_elements(pack_float_element_be)
+
+#define pack_elements(T, coerce, format)        \
+  for(; index < stop; index++) {                \
+    Object* item = self->get(state, index);     \
+    T* value = try_as<T>(item);                 \
+    if(!value) {                                \
+      item = coerce(state, call_frame, item);   \
+      if(!item) return 0;                       \
+      value = as<T>(item);                      \
+    }                                           \
+    format(value);                              \
+  }
 
 #define PACK_ELEMENTS(T, coerce, size, format)  \
   for(; index < stop; index++) {                \
@@ -103,10 +173,26 @@ namespace rubinius {
 # define MASK_16BITS     LE_MASK_16BITS
 # define MASK_32BITS     LE_MASK_32BITS
 # define MASK_64BITS     LE_MASK_64BITS
+
+# define pack_double_element_le(v)  (pack::double_element(str, (v)->val))
+# define pack_double_element_be(v)  (pack::swapd(str, (v)->val))
+# define pack_double                pack_double_le
+
+# define pack_float_element_le(v)   (pack::float_element(str, (v)->val))
+# define pack_float_element_be(v)   (pack::swapf(str, (v)->val))
+# define pack_float                 pack_float_le
 #else
 # define MASK_16BITS     BE_MASK_16BITS
 # define MASK_32BITS     BE_MASK_32BITS
 # define MASK_64BITS     BE_MASK_64BITS
+
+# define pack_double_element_le(v)  (pack::swapd(str, (v)->val))
+# define pack_double_element_be(v)  (pack::double_element(str, (v)->val))
+# define pack_double                pack_double_be
+
+# define pack_float_element_le(v)   (pack::swapf(str, (v)->val))
+# define pack_float_element_be(v)   (pack::float_element(str, (v)->val))
+# define pack_float                 pack_float_be
 #endif
 
 #define LE_MASK_64BITS              \

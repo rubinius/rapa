@@ -39,6 +39,8 @@
     }
   }
 
+  # Integers
+
   action C {
     PACK_INT_ELEMENTS(MASK_BYTE);
   }
@@ -83,6 +85,8 @@
     PACK_LONG_ELEMENTS(MASK_64BITS);
   }
 
+  # Moves
+
   action X {
 #define INVALID_MOVE_ERROR_SIZE 48
 
@@ -114,6 +118,8 @@
     }
   }
 
+  # Strings
+
   action A {
     PACK_STRING_ELEMENT(pack::string_or_nil);
     if(count > 0) str.append(count, ' ');
@@ -132,6 +138,34 @@
       if(count > 0) str.append(count, '\0');
     }
   }
+
+  # Floats
+
+  action D {
+    pack_double;
+  }
+
+  action E {
+    pack_double_le;
+  }
+
+  action e {
+    pack_float_le;
+  }
+
+  action F {
+    pack_float;
+  }
+
+  action G {
+    pack_double_be;
+  }
+
+  action g {
+    pack_float_be;
+  }
+
+  # Errors
 
   action fail {
     return force_as<String>(Primitives::failure());

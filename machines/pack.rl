@@ -25,6 +25,13 @@
   V = ('V'         modifier) %check_size %V;
   Q = (('Q' | 'q') modifier) %check_size %Q;
 
+  D = (('D' | 'd') modifier) %check_size %D;
+  E = (('E'      ) modifier) %check_size %E;
+  e = (('e'      ) modifier) %check_size %e;
+  F = (('F' | 'f') modifier) %check_size %F;
+  G = (('G'      ) modifier) %check_size %G;
+  g = (('g'      ) modifier) %check_size %g;
+
   X  = ('X' modifier) %X;
   x  = ('x' modifier) %x;
   at = ('@' modifier) %at;
@@ -33,11 +40,12 @@
   a = ('a' modifier) %string_check_size %a;
   Z = ('Z' modifier) %string_check_size %Z;
 
-  integers = C | S | I | L | n | N | v | V | Q;
-  strings = A | a | Z;
-  moves = X | x | at;
+  integers  = C | S | I | L | n | N | v | V | Q;
+  floats    = D | E | e | F | G | g;
+  strings   = A | a | Z;
+  moves     = X | x | at;
 
-  directives = integers | strings | moves;
+  directives = integers | strings | moves | floats;
 
   main := (directives >start ignored)+ %done;
 
