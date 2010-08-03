@@ -45,18 +45,18 @@ namespace rubinius {
       return G(rubinius)->send(state, call_frame, state->symbol("pack_to_float"), args);
     }
 
-    uint16_t swap16(uint16_t x) {
+    inline uint16_t swap16(uint16_t x) {
       return (((x & 0x00ff)<<8) | ((x & 0xff00)>>8));
     }
 
-    uint32_t swap32(uint32_t x) {
+    inline uint32_t swap32(uint32_t x) {
       return (((x & 0x000000ff) << 24)
              |((x & 0xff000000) >> 24)
              |((x & 0x0000ff00) << 8)
              |((x & 0x00ff0000) >> 8));
     }
 
-    uint64_t swap64(uint64_t x) {
+    inline uint64_t swap64(uint64_t x) {
       return (((x & 0x00000000000000ffLL) << 56)
              |((x & 0xff00000000000000LL) >> 56)
              |((x & 0x000000000000ff00LL) << 40)
@@ -67,23 +67,23 @@ namespace rubinius {
              |((x & 0x000000ff00000000LL) >> 8));
     }
 
-    static void swapf(std::string& str, float value) {
+    inline static void swapf(std::string& str, float value) {
       uint32_t x = swap32(*(uint32_t*)(&value));
 
       str.append((const char*)&x, sizeof(uint32_t));
     }
 
-    static void swapd(std::string& str, double value) {
+    inline static void swapd(std::string& str, double value) {
       uint64_t x = swap64(*(uint64_t*)(&value));
 
       str.append((const char*)&x, sizeof(uint64_t));
     }
 
-    static void double_element(std::string& str, double value) {
+    inline static void double_element(std::string& str, double value) {
       str.append((const char*)&value, sizeof(double));
     }
 
-    static void float_element(std::string& str, float value) {
+    inline static void float_element(std::string& str, float value) {
       str.append((const char*)&value, sizeof(float));
     }
   }
@@ -260,6 +260,9 @@ namespace rubinius {
     int int_value = 0;
     long long long_value = 0;
     std::string str("");
+
+    // Use information we have to reduce repeated allocation.
+    str.reserve(size() * 4);
 
 %%{
 
