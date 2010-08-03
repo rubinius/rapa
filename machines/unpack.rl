@@ -10,8 +10,8 @@
 
   count = digit >start_digit digit* @count;
 
-  count_modifier = '*' %rest | count?;
-  modifier = count_modifier | [_!] @non_native_error;
+  count_modifier    = '*' %rest | count?;
+  modifier          = count_modifier | [_!] @non_native_error;
   platform_modifier = ([_!] %platform)? count_modifier;
 
   S = ('S' platform_modifier) %short_width %set_stop %S %extra;
@@ -30,14 +30,19 @@
   Q = ('Q' modifier) %long_width %set_stop %Q %extra;
   q = ('q' modifier) %long_width %set_stop %q %extra;
 
-  X = ('X' modifier) %X %check_bounds;
-  x = ('x' modifier) %x %check_bounds;
+  X  = ('X' modifier) %X %check_bounds;
+  x  = ('x' modifier) %x %check_bounds;
   at = ('@' >zero_count modifier) %at %check_bounds;
 
-  integers = C | c | S | s | I | i | L | l | N | n | V | v | Q | q;
-  moves = X | x | at;
+  A = ('A' modifier) %byte_address %string_size %A;
+  a = ('a' modifier) %byte_address %string_size %a;
+  Z = ('Z' modifier) %byte_address %string_size %Z;
 
-  directives = integers | moves;
+  integers  = C | c | S | s | I | i | L | l | N | n | V | v | Q | q;
+  strings   = A | a | Z;
+  moves     = X | x | at;
+
+  directives = integers | strings | moves;
 
   main := (directives >start ignored)+ %done;
 

@@ -4,10 +4,11 @@
  *
  * vim: filetype=cpp
  */
+#include "vm/config.h"
 
 #include "vm.hpp"
 #include "object_utils.hpp"
-#include "vm/config.h"
+#include "on_stack.hpp"
 
 #include "builtin/array.hpp"
 #include "builtin/exception.hpp"
@@ -39,9 +40,9 @@ namespace rubinius {
     }
   }
 
-#define UNPACK_ELEMENTS(format, bits)                   \
-  for(; index < stop; count--, index += width) {        \
-    array->append(state, format(bits(bytes + index)));  \
+#define UNPACK_ELEMENTS(format, bits)                                 \
+  for(; index < stop; count--, index += width) {                      \
+    array->append(state, format(bits(self->byte_address() + index))); \
   }
 
 #define FIXNUM(b)         (Fixnum::from(b))
@@ -91,20 +92,26 @@ namespace rubinius {
 
   Array* String::unpack(STATE, String* directives) {
     // Ragel-specific variables
-    const char *p  = directives->c_str();
-    const char *pe = p + directives->size();
+    std::string d(directives->c_str(), directives->size());
+    const char *p  = d.c_str();
+    const char *pe = p + d.size();
+
     const char *eof = pe;
     int cs;
 
     // pack-specific variables
-    uint8_t* bytes = byte_address();
+    String* self = this;
+    Array* array = Array::create(state, 0);
+    OnStack<2> sv(state, self, array);
+    const char* bytes = 0;
+
+    size_t bytes_size = self->size();
     size_t index = 0;
     size_t stop = 0;
     size_t width = 0;
     int count = 0;
     bool rest = false;
     bool platform = false;
-    Array* array = Array::create(state, 0);
 
 %%{
   machine unpack;

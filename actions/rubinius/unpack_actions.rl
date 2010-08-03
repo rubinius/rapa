@@ -73,6 +73,8 @@
     }
   }
 
+  # Integers
+
   action C {
     UNPACK_ELEMENTS(FIXNUM, UBYTE);
   }
@@ -145,6 +147,8 @@
     UNPACK_ELEMENTS(INTEGER, S64BITS);
   }
 
+  # Moves
+
   action X {
     if(rest) count = size() - index;
     index -= count;
@@ -161,6 +165,50 @@
   action at {
     if(!rest) {
       index = count;
+    }
+  }
+
+  # Strings
+
+  action byte_address {
+    bytes = (const char*)self->byte_address() + index;
+  }
+
+  action string_size {
+    int remainder = bytes_size - index;
+
+    if(rest || count > remainder) {
+      count = remainder;
+    }
+  }
+
+  action A {
+    int c;
+    for(c = count - 1; c >= 0; c--) {
+      if(bytes[c] != ' ' && bytes[c] != '\0') break;
+    }
+    array->append(state, String::create(state, bytes, c+1));
+
+    index += count;
+  }
+
+  action a {
+    array->append(state, String::create(state, bytes, count));
+
+    index += count;
+  }
+
+  action Z {
+    int c;
+    for(c = 0; c < count; c++) {
+      if(bytes[c] == '\0') break;
+    }
+    array->append(state, String::create(state, bytes, c));
+
+    if(rest) {
+      index += c < count ? c + 1 : count;
+    } else {
+      index += count;
     }
   }
 
