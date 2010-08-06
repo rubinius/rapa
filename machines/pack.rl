@@ -14,6 +14,7 @@
   platform_modifier = ([_!] %platform)? count_modifier;
   modifier          = count_modifier | [_!] @non_native_error;
 
+  # Integers
   S = (('S' | 's') platform_modifier) %check_size %S;
   I = (('I' | 'i') platform_modifier) %check_size %I;
   L = (('L' | 'l') platform_modifier) %check_size %L;
@@ -25,6 +26,7 @@
   V = ('V'         modifier) %check_size %V;
   Q = (('Q' | 'q') modifier) %check_size %Q;
 
+  # Floats
   D = (('D' | 'd') modifier) %check_size %D;
   E = (('E'      ) modifier) %check_size %E;
   e = (('e'      ) modifier) %check_size %e;
@@ -32,20 +34,26 @@
   G = (('G'      ) modifier) %check_size %G;
   g = (('g'      ) modifier) %check_size %g;
 
+  # Moves
   X  = ('X' modifier) %X;
   x  = ('x' modifier) %x;
   at = ('@' modifier) %at;
 
+  # Strings
   A = ('A' modifier) %string_check_size %A;
   a = ('a' modifier) %string_check_size %a;
   Z = ('Z' modifier) %string_check_size %Z;
 
+  # Encodings
+  M = ('M' modifier) %string_check_size %M;
+
   integers  = C | S | I | L | n | N | v | V | Q;
   floats    = D | E | e | F | G | g;
+  encodings = M;
   strings   = A | a | Z;
   moves     = X | x | at;
 
-  directives = integers | strings | moves | floats;
+  directives = integers | strings | encodings | moves | floats;
 
   main := (directives >start ignored)+ %done;
 

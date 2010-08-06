@@ -139,6 +139,20 @@
     }
   }
 
+  # Encodings
+
+  action M {
+    Object* obj = self->get(state, index++);
+    String* s = try_as<String>(obj);
+    if(!s) {
+      s = pack::string(state, call_frame, obj);
+      if(!s) return 0;
+    }
+
+    if(rest || count < 2) count = 72;
+    pack::quotable_printable(s, str, count);
+  }
+
   # Floats
 
   action D {

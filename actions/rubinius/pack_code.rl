@@ -38,6 +38,17 @@ namespace rubinius {
       return as<String>(result);
     }
 
+    static String* string(STATE, CallFrame* call_frame, Object* obj) {
+      Array* args = Array::create(state, 1);
+      args->set(state, 0, obj);
+
+      Object* result = G(rubinius)->send(state, call_frame,
+            state->symbol("pack_to_s"), args);
+
+      if(!result) return 0;
+      return as<String>(result);
+    }
+
     static Object* float_t(STATE, CallFrame* call_frame, Object* obj) {
       Array* args = Array::create(state, 1);
       args->set(state, 0, obj);
@@ -91,6 +102,60 @@ namespace rubinius {
 
     inline static void float_element(std::string& str, float value) {
       str.append((const char*)&value, sizeof(float));
+    }
+
+#define QUOTABLE_PRINTABLE_BUFSIZE 1024
+
+    static void quotable_printable(String* s, std::string& str, int count) {
+      static char hex_table[] = "0123456789ABCDEF";
+      char buf[QUOTABLE_PRINTABLE_BUFSIZE];
+
+      uint8_t* b = s->byte_address();
+      uint8_t* e = b + s->size();
+      int i = 0, n = 0, prev = -1;
+
+      for(; b < e; b++) {
+        if((*b > 126) || (*b < 32 && *b != '\n' && *b != '\t') || (*b == '=')) {
+          buf[i++] = '=';
+          buf[i++] = hex_table[*b >> 4];
+          buf[i++] = hex_table[*b & 0x0f];
+          n += 3;
+          prev = -1;
+        } else if(*b == '\n') {
+          if(prev == ' ' || prev == '\t') {
+            buf[i++] = '=';
+            buf[i++] = *b;
+          }
+          buf[i++] = *b;
+          n = 0;
+          prev = *b;
+        } else {
+          buf[i++] = *b;
+          n++;
+          prev = *b;
+        }
+
+        if(n > count) {
+          buf[i++] = '=';
+          buf[i++] = '\n';
+          n = 0;
+          prev = '\n';
+        }
+
+        if(i > QUOTABLE_PRINTABLE_BUFSIZE - 5) {
+          str.append(buf, i);
+          i = 0;
+        }
+      }
+
+      if(n > 0) {
+        buf[i++] = '=';
+        buf[i++] = '\n';
+      }
+
+      if(i > 0) {
+        str.append(buf, i);
+      }
     }
   }
 
