@@ -49,6 +49,17 @@ namespace rubinius {
       return as<String>(result);
     }
 
+    typedef String* (*EncodingCoerce)(STATE, CallFrame*, Object*);
+
+    inline static String* encoding_string(STATE, CallFrame* call_frame, Object* obj,
+                                          EncodingCoerce coerce)
+    {
+      String* s = try_as<String>(obj);
+      if(s) return s;
+
+      return coerce(state, call_frame, obj);
+    }
+
     static Object* float_t(STATE, CallFrame* call_frame, Object* obj) {
       Array* args = Array::create(state, 1);
       args->set(state, 0, obj);
@@ -155,6 +166,126 @@ namespace rubinius {
 
       if(i > 0) {
         str.append(buf, i);
+      }
+    }
+
+    inline static size_t bit_extra(String* s, bool rest, size_t& count) {
+      size_t extra = 0;
+
+      if(rest) {
+        count = s->size();
+      } else {
+        size_t size = s->size();
+        if(count > size) {
+          extra = (count - size + 1) / 2;
+          count = size;
+        }
+      }
+
+      return extra;
+    }
+
+    static void bit_high(String* s, std::string& str, size_t count) {
+      uint8_t* b = s->byte_address();
+      int byte = 0;
+
+      for(size_t i = 0; i++ < count; b++) {
+        byte |= *b & 1;
+        if(i & 7) {
+          byte <<= 1;
+        } else {
+          str.push_back(byte & 0xff);
+        }
+      }
+
+      if (count & 7) {
+        byte <<= 7 - (count & 7);
+        str.push_back(byte & 0xff);
+      }
+    }
+
+    static void bit_low(String* s, std::string& str, size_t count) {
+      uint8_t* b = s->byte_address();
+      int byte = 0;
+
+      for(size_t i = 0; i++ < count; b++) {
+        if(*b & 1)
+          byte |= 128;
+
+        if(i & 7) {
+          byte >>= 1;
+        } else {
+          str.push_back(byte & 0xff);
+        }
+      }
+
+      if(count & 7) {
+        byte >>= 7 - (count & 7);
+        str.push_back(byte & 0xff);
+      }
+    }
+
+    inline static size_t hex_extra(String* s, bool rest, size_t& count) {
+      size_t extra = 0;
+
+      if(rest) {
+        count = s->size();
+      } else {
+        size_t size = s->size();
+        if(count > size) {
+          extra = (count + 1) / 2 - (size + 1) / 2;
+          count = size;
+        }
+      }
+
+      return extra;
+    }
+
+    static void hex_high(String* s, std::string& str, size_t count) {
+      uint8_t* b = s->byte_address();
+      int byte = 0;
+
+      for(size_t i = 0; i++ < count; b++) {
+        if(ISALPHA(*b)) {
+          byte |= ((*b & 15) + 9) & 15;
+        } else {
+          byte |= *b & 15;
+        }
+
+        if(i & 1) {
+          byte <<= 4;
+        } else {
+          str.push_back(byte & 0xff);
+          byte = 0;
+        }
+      }
+
+      if(count & 1) {
+        str.push_back(byte & 0xff);
+      }
+    }
+
+    static void hex_low(String* s, std::string& str, size_t count) {
+      uint8_t* b = s->byte_address();
+      int byte = 0;
+
+      for(size_t i = 0; i++ < count; b++) {
+        if(ISALPHA(*b)) {
+          byte |= (((*b & 15) + 9) & 15) << 4;
+        } else {
+          byte |= (*b & 15) << 4;
+        }
+
+        if(i & 1) {
+          byte >>= 4;
+        } else {
+          str.push_back(byte & 0xff);
+          byte = 0;
+        }
+      }
+
+      if(count & 1) {
+        str.push_back(byte & 0xff);
       }
     }
   }

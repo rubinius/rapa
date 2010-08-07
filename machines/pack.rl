@@ -45,11 +45,15 @@
   Z = ('Z' modifier) %string_check_size %Z;
 
   # Encodings
+  B = ('B' modifier) %string_check_size %B;
+  b = ('b' modifier) %string_check_size %b;
+  H = ('H' modifier) %string_check_size %H;
+  h = ('h' modifier) %string_check_size %h;
   M = ('M' modifier) %string_check_size %M;
 
   integers  = C | S | I | L | n | N | v | V | Q;
   floats    = D | E | e | F | G | g;
-  encodings = M;
+  encodings = B | b | H | h | M;
   strings   = A | a | Z;
   moves     = X | x | at;
 
