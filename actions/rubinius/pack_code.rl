@@ -195,6 +195,7 @@ namespace rubinius {
           byte <<= 1;
         } else {
           str.push_back(byte & 0xff);
+          byte = 0;
         }
       }
 
@@ -216,6 +217,7 @@ namespace rubinius {
           byte >>= 1;
         } else {
           str.push_back(byte & 0xff);
+          byte = 0;
         }
       }
 
