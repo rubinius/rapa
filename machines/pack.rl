@@ -50,10 +50,12 @@
   H = ('H' modifier) %string_check_size %H;
   h = ('h' modifier) %string_check_size %h;
   M = ('M' modifier) %string_check_size %M;
+  m = ('m' modifier) %string_check_size %b64_uu_size %m;
+  u = ('u' modifier) %string_check_size %b64_uu_size %u;
 
   integers  = C | S | I | L | n | N | v | V | Q;
   floats    = D | E | e | F | G | g;
-  encodings = B | b | H | h | M;
+  encodings = B | b | H | h | M | m | u;
   strings   = A | a | Z;
   moves     = X | x | at;
 

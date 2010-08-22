@@ -10,6 +10,7 @@
 #include "vm.hpp"
 #include "object_utils.hpp"
 #include "on_stack.hpp"
+#include "objectmemory.hpp"
 
 #include "builtin/array.hpp"
 #include "builtin/exception.hpp"
@@ -27,37 +28,22 @@ namespace rubinius {
       return G(rubinius)->send(state, call_frame, state->symbol("pack_to_int"), args);
     }
 
-    static String* string_or_nil(STATE, CallFrame* call_frame, Object* obj) {
-      Array* args = Array::create(state, 1);
-      args->set(state, 0, obj);
-
-      Object* result = G(rubinius)->send(state, call_frame,
-            state->symbol("pack_to_str_or_nil"), args);
-
-      if(!result) return 0;
-      return as<String>(result);
-    }
-
-    static String* string(STATE, CallFrame* call_frame, Object* obj) {
-      Array* args = Array::create(state, 1);
-      args->set(state, 0, obj);
-
-      Object* result = G(rubinius)->send(state, call_frame,
-            state->symbol("pack_to_s"), args);
-
-      if(!result) return 0;
-      return as<String>(result);
-    }
-
-    typedef String* (*EncodingCoerce)(STATE, CallFrame*, Object*);
-
     inline static String* encoding_string(STATE, CallFrame* call_frame, Object* obj,
-                                          EncodingCoerce coerce)
+                                          const char* coerce_name)
     {
       String* s = try_as<String>(obj);
       if(s) return s;
 
-      return coerce(state, call_frame, obj);
+      Array* args = Array::create(state, 1);
+      args->set(state, 0, obj);
+
+      std::string coerce_method("pack_");
+      coerce_method += coerce_name;
+      Object* result = G(rubinius)->send(state, call_frame,
+            state->symbol(coerce_method.c_str()), args);
+
+      if(!result) return 0;
+      return as<String>(result);
     }
 
     static Object* float_t(STATE, CallFrame* call_frame, Object* obj) {
@@ -165,6 +151,53 @@ namespace rubinius {
       }
 
       if(i > 0) {
+        str.append(buf, i);
+      }
+    }
+
+    static const char uu_table[] =
+      "`!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_";
+    static const char b64_table[] =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+#define b64_uu_byte1(t, b)      t[077 & (*b >> 2)]
+#define b64_uu_byte2(t, b, c)   t[077 & (((*b << 4) & 060) | ((c >> 4) & 017))]
+#define b64_uu_byte3(t, b, c)   t[077 & (((b[1] << 2) & 074) | ((c >> 6) & 03))];
+#define b64_uu_byte4(t, b)      t[077 & b[2]];
+
+    static void b64_uu_encode(String* s, std::string& str, size_t count,
+                              const char* table, int padding, bool encode_size)
+    {
+      char *buf = ALLOCA_N(char, count * 4 / 3 + 6);
+      size_t i, chars, line, total = s->size();
+      uint8_t* b = s->byte_address();
+
+      for(i = 0; total > 0; i = 0, total -= line) {
+        line = total > count ? count : total;
+
+        if(encode_size) buf[i++] = line + ' ';
+
+        for(chars = line; chars >= 3; chars -= 3, b += 3) {
+          buf[i++] = b64_uu_byte1(table, b);
+          buf[i++] = b64_uu_byte2(table, b, b[1]);
+          buf[i++] = b64_uu_byte3(table, b, b[2]);
+          buf[i++] = b64_uu_byte4(table, b);
+        }
+
+        if(chars == 2) {
+          buf[i++] = b64_uu_byte1(table, b);
+          buf[i++] = b64_uu_byte2(table, b, b[1]);
+          buf[i++] = b64_uu_byte3(table, b, '\0');
+          buf[i++] = padding;
+        } else if(chars == 1) {
+          buf[i++] = b64_uu_byte1(table, b);
+          buf[i++] = b64_uu_byte2(table, b, '\0');
+          buf[i++] = padding;
+          buf[i++] = padding;
+        }
+
+        b += chars;
+        buf[i++] = '\n';
         str.append(buf, i);
       }
     }
@@ -343,24 +376,24 @@ namespace rubinius {
     format;                                     \
   }
 
-#define PACK_STRING_ELEMENT(coerce)  {                      \
-  Object* item = self->get(state, index);                   \
-  String* value = try_as<String>(item);                     \
-  if(!value) {                                              \
-    value = coerce(state, call_frame, item);                \
-    if(!value) return 0;                                    \
-  }                                                         \
-  if(RTEST(value->tainted_p(state))) tainted = true;        \
-  size_t size = value->size();                              \
-  if(rest) count = size;                                    \
-  if(count <= size) {                                       \
-    str.append((const char*)value->byte_address(), count);  \
-    count = 0;                                              \
-  } else {                                                  \
-    str.append((const char*)value->byte_address(), size);   \
-    count = count - size;                                   \
-  }                                                         \
-  index++;                                                  \
+#define PACK_STRING_ELEMENT(coerce)  {                              \
+  Object* item = self->get(state, index);                           \
+  String* value = try_as<String>(item);                             \
+  if(!value) {                                                      \
+    value = pack::encoding_string(state, call_frame, item, coerce); \
+    if(!value) return 0;                                            \
+  }                                                                 \
+  if(RTEST(value->tainted_p(state))) tainted = true;                \
+  size_t size = value->size();                                      \
+  if(rest) count = size;                                            \
+  if(count <= size) {                                               \
+    str.append((const char*)value->byte_address(), count);          \
+    count = 0;                                                      \
+  } else {                                                          \
+    str.append((const char*)value->byte_address(), size);           \
+    count = count - size;                                           \
+  }                                                                 \
+  index++;                                                          \
 }
 
 #define BYTE1(x)        (((x) & 0x00000000000000ff))
