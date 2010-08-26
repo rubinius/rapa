@@ -147,6 +147,32 @@
     UNPACK_ELEMENTS(INTEGER, S64BITS);
   }
 
+  # Floats
+
+  action D {
+    unpack_double;
+  }
+
+  action E {
+    unpack_double_le;
+  }
+
+  action e {
+    unpack_float_le;
+  }
+
+  action F {
+    unpack_float;
+  }
+
+  action G {
+    unpack_double_be;
+  }
+
+  action g {
+    unpack_float_be;
+  }
+
   # Moves
 
   action X {
