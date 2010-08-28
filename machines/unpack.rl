@@ -45,16 +45,23 @@
   at = ('@' >zero_count modifier) %at %check_bounds;
 
   # Strings
-  A = ('A' modifier) %byte_address %string_size %A;
-  a = ('a' modifier) %byte_address %string_size %a;
-  Z = ('Z' modifier) %byte_address %string_size %Z;
+  A = ('A' modifier) %byte_address %string_width %string_size %A;
+  a = ('a' modifier) %byte_address %string_width %string_size %a;
+  Z = ('Z' modifier) %byte_address %string_width %string_size %Z;
+
+  # Encodings
+  B = ('B' modifier) %byte_address %bit_width %string_size %B %index_increment;
+  b = ('b' modifier) %byte_address %bit_width %string_size %b %index_increment;
+  H = ('H' modifier) %byte_address %hex_width %string_size %H %index_increment;
+  h = ('h' modifier) %byte_address %hex_width %string_size %h %index_increment;
 
   integers  = C | c | S | s | I | i | L | l | N | n | V | v | Q | q;
   floats    = D | E | e | F | G | g;
+  encodings = B | b | H | h;
   strings   = A | a | Z;
   moves     = X | x | at;
 
-  directives = integers | strings | moves | floats;
+  directives = integers | strings | encodings | moves | floats;
 
   main := (directives >start ignored)+ %done;
 

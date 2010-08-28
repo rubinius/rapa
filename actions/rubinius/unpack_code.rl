@@ -9,6 +9,7 @@
 #include "vm.hpp"
 #include "object_utils.hpp"
 #include "on_stack.hpp"
+#include "objectmemory.hpp"
 
 #include "builtin/array.hpp"
 #include "builtin/exception.hpp"
@@ -18,6 +19,14 @@
 namespace rubinius {
 
   namespace unpack {
+    void inline increment(size_t& index, size_t n, size_t limit) {
+      if(index + n < limit) {
+        index += n;
+      } else {
+        index = limit;
+      }
+    }
+
     uint16_t swap16(uint16_t x) {
       return ((((x)&0xff)<<8) | (((x)>>8)&0xff));
     }
@@ -61,12 +70,87 @@ namespace rubinius {
 
       return y;
     }
+
+    String* bit_high(STATE, const char*& bytes, size_t count) {
+      String* str = String::create(state, 0, count);
+      uint8_t *buf = str->byte_address();
+      int bits = 0;
+
+      for(size_t i = 0; i < count; i++) {
+        if(i & 7) {
+          bits <<= 1;
+        } else {
+          bits = *bytes++;
+        }
+
+        buf[i] = (bits & 128) ? '1' : '0';
+      }
+
+      return str;
+    }
+
+    String* bit_low(STATE, const char*& bytes, size_t count) {
+      String* str = String::create(state, 0, count);
+      uint8_t *buf = str->byte_address();
+      int bits = 0;
+
+      for(size_t i = 0; i < count; i++) {
+        if(i & 7) {
+          bits >>= 1;
+        } else {
+          bits = *bytes++;
+        }
+
+        buf[i] = (bits & 1) ? '1' : '0';
+      }
+
+      return str;
+    }
+
+    static const char hexdigits[] = "0123456789abcdef0123456789ABCDEFx";
+
+    String* hex_high(STATE, const char*& bytes, size_t count) {
+      String* str = String::create(state, 0, count);
+      uint8_t *buf = str->byte_address();
+      int bits = 0;
+
+      for(size_t i = 0; i < count; i++) {
+        if(i & 1) {
+          bits <<= 4;
+        } else {
+          bits = *bytes++;
+        }
+
+        buf[i] = unpack::hexdigits[(bits >> 4) & 15];
+      }
+
+      return str;
+    }
+
+    String* hex_low(STATE, const char*& bytes, size_t count) {
+      String* str = String::create(state, 0, count);
+      uint8_t *buf = str->byte_address();
+      int bits = 0;
+
+      for(size_t i = 0; i < count; i++) {
+        if(i & 1) {
+          bits >>= 4;
+        } else {
+          bits = *bytes++;
+        }
+
+        buf[i] = unpack::hexdigits[bits & 15];
+      }
+
+      return str;
+    }
   }
 
 #define UNPACK_ELEMENTS(create, bits)                     \
-  for(; index < stop; count--, index += width) {          \
+  for(; index < stop; index += width) {                   \
     const uint8_t* bytes = self->byte_address() + index;  \
     array->append(state, create(bits(bytes)));            \
+    if(count > 0) count--;                                \
   }
 
 #define unpack_elements   UNPACK_ELEMENTS
@@ -160,7 +244,7 @@ namespace rubinius {
     size_t index = 0;
     size_t stop = 0;
     size_t width = 0;
-    int count = 0;
+    size_t count = 0;
     bool rest = false;
     bool platform = false;
 

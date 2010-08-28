@@ -60,16 +60,15 @@
   }
 
   action set_stop {
-    stop = rest ? size() + 1 : index + width * count;
-    if(stop > size()) {
-      stop = index + ((size() - index) / width) * width;
+    stop = rest ? bytes_size + 1 : index + width * count;
+    if(stop > bytes_size) {
+      stop = index + ((bytes_size - index) / width) * width;
     }
   }
 
   action extra {
-    while(count > 0) {
+    for(; count > 0; count--) {
       array->append(state, Qnil);
-      count--;
     }
   }
 
@@ -176,13 +175,13 @@
   # Moves
 
   action X {
-    if(rest) count = size() - index;
+    if(rest) count = bytes_size - index;
     index -= count;
   }
 
   action x {
     if(rest) {
-      index = size();
+      index = bytes_size;
     } else {
       index += count;
     }
@@ -194,54 +193,101 @@
     }
   }
 
-  # Strings
+  # String / Encoding helpers
 
   action byte_address {
     bytes = (const char*)self->byte_address() + index;
   }
 
-  action string_size {
-    int remainder = bytes_size - index;
+  action string_width {
+    width = 1;
+  }
 
-    if(rest || count > remainder) {
-      count = remainder;
+  action bit_width {
+    width = 8;
+  }
+
+  action hex_width {
+    width = 2;
+  }
+
+  action string_size {
+    size_t remainder = bytes_size - index;
+
+    if(rest || count > remainder * width) {
+      count = remainder * width;
     }
   }
 
-  action A {
-    int c;
-    for(c = count - 1; c >= 0; c--) {
-      if(bytes[c] != ' ' && bytes[c] != '\0') break;
-    }
-    array->append(state, String::create(state, bytes, c+1));
+  # Strings
 
-    index += count;
+  action A {
+    String* string;
+
+    if(count > 0) {
+      size_t i;
+      for(i = count; i > 0; i--) {
+        uint8_t c = bytes[i-1];
+        if(c != ' ' && c != '\0')
+          break;
+      }
+      string = String::create(state, bytes, i);
+    } else {
+      string = String::create(state, "");
+    }
+
+    array->append(state, string);
+    unpack::increment(index, count, bytes_size);
   }
 
   action a {
     array->append(state, String::create(state, bytes, count));
 
-    index += count;
+    unpack::increment(index, count, bytes_size);
   }
 
   action Z {
-    int c;
+    size_t c;
     for(c = 0; c < count; c++) {
       if(bytes[c] == '\0') break;
     }
     array->append(state, String::create(state, bytes, c));
 
     if(rest) {
-      index += c < count ? c + 1 : count;
+      unpack::increment(index, c < count ? c + 1 : count, bytes_size);
     } else {
-      index += count;
+      unpack::increment(index, count, bytes_size);
     }
+  }
+
+  # Encodings
+
+  action index_increment {
+    unpack::increment(index,
+                      bytes - ((const char*)self->byte_address() + index),
+                      bytes_size);
+  }
+
+  action B {
+    array->append(state, unpack::bit_high(state, bytes, count));
+  }
+
+  action b {
+    array->append(state, unpack::bit_low(state, bytes, count));
+  }
+
+  action H {
+    array->append(state, unpack::hex_high(state, bytes, count));
+  }
+
+  action h {
+    array->append(state, unpack::hex_low(state, bytes, count));
   }
 
   action check_bounds {
 #define OOB_ERROR_SIZE 20
 
-    if(index < 0 || index > size()) {
+    if(index < 0 || index > bytes_size) {
       char oob_error_msg[OOB_ERROR_SIZE];
       snprintf(oob_error_msg, OOB_ERROR_SIZE,
                "%c outside of string", *p);
