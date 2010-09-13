@@ -193,6 +193,17 @@
     }
   }
 
+  action check_bounds {
+#define OOB_ERROR_SIZE 20
+
+    if(index < 0 || index > bytes_size) {
+      char oob_error_msg[OOB_ERROR_SIZE];
+      snprintf(oob_error_msg, OOB_ERROR_SIZE,
+               "%c outside of string", *p);
+      Exception::argument_error(state, oob_error_msg);
+    }
+  }
+
   # String / Encoding helpers
 
   action byte_address {
@@ -211,9 +222,11 @@
     width = 2;
   }
 
-  action string_size {
-    size_t remainder = bytes_size - index;
+  action remainder {
+    remainder = bytes_size - index;
+  }
 
+  action string_size {
     if(rest || count > remainder * width) {
       count = remainder * width;
     }
@@ -284,15 +297,16 @@
     array->append(state, unpack::hex_low(state, bytes, count));
   }
 
-  action check_bounds {
-#define OOB_ERROR_SIZE 20
+  action M {
+    array->append(state, unpack::quotable_printable(state, bytes, remainder));
+  }
 
-    if(index < 0 || index > bytes_size) {
-      char oob_error_msg[OOB_ERROR_SIZE];
-      snprintf(oob_error_msg, OOB_ERROR_SIZE,
-               "%c outside of string", *p);
-      Exception::argument_error(state, oob_error_msg);
-    }
+  action m {
+    array->append(state, unpack::base64_decode(state, bytes, remainder));
+  }
+
+  action u {
+    array->append(state, unpack::uu_decode(state, bytes, remainder));
   }
 
   action non_native_error {

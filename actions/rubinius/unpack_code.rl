@@ -13,6 +13,7 @@
 
 #include "builtin/array.hpp"
 #include "builtin/exception.hpp"
+#include "builtin/fixnum.hpp"
 #include "builtin/float.hpp"
 #include "builtin/string.hpp"
 
@@ -69,6 +70,199 @@ namespace rubinius {
       memcpy(&y, &x, sizeof(double));
 
       return y;
+    }
+
+    static inline int hex2num(char c) {
+      switch (c) {
+      case '0': case '1': case '2': case '3': case '4':
+      case '5': case '6': case '7': case '8': case '9':
+        return c - '0';
+      case 'a': case 'b': case 'c':
+      case 'd': case 'e': case 'f':
+        return c - 'a' + 10;
+      case 'A': case 'B': case 'C':
+      case 'D': case 'E': case 'F':
+        return c - 'A' + 10;
+      default:
+        return -1;
+      }
+    }
+
+    String* quotable_printable(STATE, const char*& bytes, size_t remainder) {
+      if(remainder == 0) {
+        return String::create(state, 0, 0);
+      }
+
+      const char* bytes_end = bytes + remainder;
+      String* str = String::create(state, 0, remainder);
+      uint8_t *buf = str->byte_address();
+
+      while(bytes < bytes_end) {
+        if(*bytes == '=') {
+          if(++bytes == bytes_end)
+            break;
+
+          if(bytes+1 < bytes_end && bytes[0] == '\r' && bytes[1] == '\n')
+            bytes++;
+
+          if(*bytes != '\n') {
+            int c1, c2;
+
+            if((c1 = hex2num(*bytes)) == -1)
+              break;
+            if(++bytes == bytes_end)
+              break;
+            if((c2 = hex2num(*bytes)) == -1)
+              break;
+            *buf++ = c1 << 4 | c2;
+          }
+        } else {
+          *buf++ = *bytes;
+        }
+        bytes++;
+      }
+
+      *buf = 0;
+      str->num_bytes(state, Fixnum::from(buf - str->byte_address()));
+
+      return str;
+    }
+
+    String* base64_decode(STATE, const char*& bytes, size_t remainder) {
+      if(remainder == 0) {
+        return String::create(state, 0, 0);
+      }
+
+      static bool initialized = false;
+      static signed char b64_xtable[256];
+
+      if(!initialized) {
+        initialized = true;
+
+        for(int i = 0; i < 256; i++) {
+          b64_xtable[i] = -1;
+        }
+
+        for(int i = 0; i < 64; i++) {
+          static const char table[] =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+          b64_xtable[(int)(table[i])] = i;
+        }
+      }
+
+      const char* bytes_end = bytes + remainder;
+      native_int num_bytes = (bytes_end - bytes) * 3 / 4;
+      String* str = String::create(state, 0, num_bytes);
+      uint8_t *buf = str->byte_address();
+
+      int a = -1, b = -1, c = 0, d = 0;
+      while(bytes < bytes_end) {
+        a = b = c = d = -1;
+
+        while((a = b64_xtable[(int)(*bytes)]) == -1 && bytes < bytes_end)
+          bytes++;
+        if(bytes >= bytes_end)
+          break;
+        bytes++;
+
+        while((b = (int)b64_xtable[(int)(*bytes)]) == -1 && bytes < bytes_end)
+          bytes++;
+        if(bytes >= bytes_end)
+          break;
+        bytes++;
+
+        while((c = (int)b64_xtable[(int)(*bytes)]) == -1 && bytes < bytes_end) {
+          if(*bytes == '=')
+            break;
+          bytes++;
+        }
+        if(*bytes == '=' || bytes >= bytes_end)
+          break;
+        bytes++;
+
+        while((d = (int)b64_xtable[(int)(*bytes)]) == -1 && bytes < bytes_end) {
+          if(*bytes == '=')
+            break;
+          bytes++;
+        }
+        if(*bytes == '=' || bytes >= bytes_end)
+          break;
+        bytes++;
+
+        *buf++ = a << 2 | b >> 4;
+        *buf++ = b << 4 | c >> 2;
+        *buf++ = c << 6 | d;
+      }
+
+      if(a != -1 && b != -1) {
+        if(c == -1 && *bytes == '=') {
+          *buf++ = a << 2 | b >> 4;
+        } else if(c != -1 && *bytes == '=') {
+          *buf++ = a << 2 | b >> 4;
+          *buf++ = b << 4 | c >> 2;
+        }
+      }
+
+      *buf = 0;
+      str->num_bytes(state, Fixnum::from(buf - str->byte_address()));
+      return str;
+    }
+
+    String* uu_decode(STATE, const char*& bytes, size_t remainder) {
+      if(remainder == 0) {
+        return String::create(state, 0, 0);
+      }
+
+      const char* bytes_end = bytes + remainder;
+      native_int length = 0, num_bytes = (bytes_end - bytes) * 3 / 4;
+      String* str = String::create(state, 0, num_bytes);
+      uint8_t *buf = str->byte_address();
+
+      while(bytes < bytes_end && *bytes > ' ' && *bytes < 'a') {
+        size_t line = (*bytes++ - ' ') & 0x3f;
+        length += line;
+        if(length > num_bytes) {
+          line -= length - num_bytes;
+          length = num_bytes;
+        }
+
+        while(line > 0) {
+          char values[4];
+          int l = line > 3 ? 3 : line;
+
+          for(int i = 0; i < 4; i++) {
+            if(bytes < bytes_end && *bytes >= ' ') {
+              values[i] = (*bytes++ - ' ') & 0x3f;
+            } else {
+              values[i] = 0;
+            }
+          }
+
+          switch(l) {
+          case 3:
+            buf[2] = values[2] << 6 | values[3];
+          case 2:
+            buf[1] = values[1] << 4 | values[2] >> 2;
+          case 1:
+            buf[0] = values[0] << 2 | values[1] >> 4;
+          }
+
+          buf += l;
+          line -= l;
+        }
+
+        if(*bytes == '\r') *bytes++;
+        if(*bytes == '\n') {
+          *bytes++;
+        } else if(bytes < bytes_end && (bytes+1 == bytes_end || bytes[1] == '\n')) {
+          // possible checksum byte
+          bytes += 2;
+        }
+      }
+
+      buf[length] = 0;
+      str->num_bytes(state, Fixnum::from(length));
+      return str;
     }
 
     String* bit_high(STATE, const char*& bytes, size_t count) {
@@ -245,6 +439,7 @@ namespace rubinius {
     size_t stop = 0;
     size_t width = 0;
     size_t count = 0;
+    size_t remainder = 0;
     bool rest = false;
     bool platform = false;
 
