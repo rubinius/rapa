@@ -27,14 +27,14 @@
   }
 
   action check_size {
-    stop = rest ? size() : index + count;
-    if(stop > size()) {
+    stop = rest ? array_size : index + count;
+    if(stop > array_size) {
       Exception::argument_error(state, "too few arguments");
     }
   }
 
   action string_check_size {
-    if(index >= size()) {
+    if(index >= array_size) {
       Exception::argument_error(state, "too few arguments");
     }
   }
@@ -208,6 +208,10 @@
     if(!s) return 0;
 
     pack::b64_uu_encode(s, str, count, pack::b64_table, '=', false);
+  }
+
+  action U {
+    pack_utf8
   }
 
   action u {

@@ -56,11 +56,12 @@
   h = ('h' modifier) %byte_address %hex_width %remainder %string_size %h %index_increment;
   M = ('M' modifier) %byte_address %remainder %M %index_increment;
   m = ('m' modifier) %byte_address %remainder %m %index_increment;
+  U = ('U' modifier) %byte_address %remainder %U %index_increment;
   u = ('u' modifier) %byte_address %remainder %u %index_increment;
 
   integers  = C | c | S | s | I | i | L | l | N | n | V | v | Q | q;
   floats    = D | E | e | F | G | g;
-  encodings = B | b | H | h | M | m | u;
+  encodings = B | b | H | h | M | m | U | u;
   strings   = A | a | Z;
   moves     = X | x | at;
 

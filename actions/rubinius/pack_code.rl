@@ -101,6 +101,16 @@ namespace rubinius {
       str.append((const char*)&value, sizeof(float));
     }
 
+    inline static int32_t int32_element(STATE, Integer* value) {
+      if(value->fixnum_p()) {
+        return as<Fixnum>(value)->to_int();
+      } else {
+        Bignum* big = as<Bignum>(value);
+        big->verify_size(state, 32);
+        return big->to_int();
+      }
+    }
+
 #define QUOTABLE_PRINTABLE_BUFSIZE 1024
 
     static void quotable_printable(String* s, std::string& str, int count) {
@@ -199,6 +209,41 @@ namespace rubinius {
         b += chars;
         buf[i++] = '\n';
         str.append(buf, i);
+      }
+    }
+
+    void utf8(STATE, std::string& str, Integer* value) {
+      int32_t v = int32_element(state, value);
+
+      if(!(v & ~0x7f)) {
+        str.push_back(v);
+      } else if(!(v & ~0x7ff)) {
+        str.push_back(((v >> 6) & 0xff) | 0xc0);
+        str.push_back((v & 0x3f) | 0x80);
+      } else if(!(v & ~0xffff)) {
+        str.push_back(((v >> 12) & 0xff) | 0xe0);
+        str.push_back(((v >> 6) & 0x3f) | 0x80);
+        str.push_back((v & 0x3f) | 0x80);
+      } else if(!(v & ~0x1fffff)) {
+        str.push_back(((v >> 18) & 0xff) | 0xf0);
+        str.push_back(((v >> 12) & 0x3f) | 0x80);
+        str.push_back(((v >> 6) & 0x3f) | 0x80);
+        str.push_back((v & 0x3f) | 0x80);
+      } else if(!(v & ~0x3ffffff)) {
+        str.push_back(((v >> 24) & 0xff) | 0xf8);
+        str.push_back(((v >> 18) & 0x3f) | 0x80);
+        str.push_back(((v >> 12) & 0x3f) | 0x80);
+        str.push_back(((v >> 6) & 0x3f) | 0x80);
+        str.push_back((v & 0x3f) | 0x80);
+      } else if(!(v & ~0x7fffffff)) {
+        str.push_back(((v >> 30) & 0xff) | 0xfc);
+        str.push_back(((v >> 24) & 0x3f) | 0x80);
+        str.push_back(((v >> 18) & 0x3f) | 0x80);
+        str.push_back(((v >> 12) & 0x3f) | 0x80);
+        str.push_back(((v >> 6) & 0x3f) | 0x80);
+        str.push_back((v & 0x3f) | 0x80);
+      } else {
+        Exception::range_error(state, "pack('U') value out of range");
       }
     }
 
@@ -351,6 +396,9 @@ namespace rubinius {
 #define pack_float_le                 pack_float_elements(pack_float_element_le)
 #define pack_float_be                 pack_float_elements(pack_float_element_be)
 
+#define pack_utf8_element(v)          pack::utf8(state, str, v)
+#define pack_utf8                     pack_elements(Integer, pack::integer, pack_utf8_element)
+
 #define pack_elements(T, coerce, format)        \
   for(; index < stop; index++) {                \
     Object* item = self->get(state, index);     \
@@ -487,6 +535,7 @@ namespace rubinius {
     Array* self = this;
     OnStack<1> sv(state, self);
 
+    size_t array_size = self->size();
     size_t index = 0;
     size_t count = 0;
     size_t stop = 0;
@@ -499,7 +548,7 @@ namespace rubinius {
     std::string str("");
 
     // Use information we have to reduce repeated allocation.
-    str.reserve(size() * 4);
+    str.reserve(array_size * 4);
 
 %%{
 
