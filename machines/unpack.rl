@@ -45,19 +45,19 @@
   at = ('@' >zero_count modifier) %at %check_bounds;
 
   # Strings
-  A = ('A' modifier) %byte_address %string_width %remainder %string_size %A;
-  a = ('a' modifier) %byte_address %string_width %remainder %string_size %a;
-  Z = ('Z' modifier) %byte_address %string_width %remainder %string_size %Z;
+  A = ('A' modifier) %bytes %string_width %remainder %string_size %A;
+  a = ('a' modifier) %bytes %string_width %remainder %string_size %a;
+  Z = ('Z' modifier) %bytes %string_width %remainder %string_size %Z;
 
   # Encodings
-  B = ('B' modifier) %byte_address %bit_width %remainder %string_size %B %index_increment;
-  b = ('b' modifier) %byte_address %bit_width %remainder %string_size %b %index_increment;
-  H = ('H' modifier) %byte_address %hex_width %remainder %string_size %H %index_increment;
-  h = ('h' modifier) %byte_address %hex_width %remainder %string_size %h %index_increment;
-  M = ('M' modifier) %byte_address %remainder %M %index_increment;
-  m = ('m' modifier) %byte_address %remainder %m %index_increment;
-  U = ('U' modifier) %byte_address %remainder %U %index_increment;
-  u = ('u' modifier) %byte_address %remainder %u %index_increment;
+  B = ('B' modifier) %bytes %bit_width %remainder %string_size %B %index_increment;
+  b = ('b' modifier) %bytes %bit_width %remainder %string_size %b %index_increment;
+  H = ('H' modifier) %bytes %hex_width %remainder %string_size %H %index_increment;
+  h = ('h' modifier) %bytes %hex_width %remainder %string_size %h %index_increment;
+  M = ('M' modifier) %bytes %bytes_end %remainder %M %index_increment;
+  m = ('m' modifier) %bytes %bytes_end %remainder %m %index_increment;
+  U = ('U' modifier) %bytes %bytes_end %remainder %U;
+  u = ('u' modifier) %bytes %bytes_end %remainder %u %index_increment;
 
   integers  = C | c | S | s | I | i | L | l | N | n | V | v | Q | q;
   floats    = D | E | e | F | G | g;

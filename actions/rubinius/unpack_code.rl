@@ -88,12 +88,13 @@ namespace rubinius {
       }
     }
 
-    String* quotable_printable(STATE, const char*& bytes, size_t remainder) {
+    String* quotable_printable(STATE, const char*& bytes,
+                               const char* bytes_end, size_t remainder)
+    {
       if(remainder == 0) {
         return String::create(state, 0, 0);
       }
 
-      const char* bytes_end = bytes + remainder;
       String* str = String::create(state, 0, remainder);
       uint8_t *buf = str->byte_address();
 
@@ -128,7 +129,9 @@ namespace rubinius {
       return str;
     }
 
-    String* base64_decode(STATE, const char*& bytes, size_t remainder) {
+    String* base64_decode(STATE, const char*& bytes,
+                          const char* bytes_end, size_t remainder)
+    {
       if(remainder == 0) {
         return String::create(state, 0, 0);
       }
@@ -150,7 +153,6 @@ namespace rubinius {
         }
       }
 
-      const char* bytes_end = bytes + remainder;
       native_int num_bytes = (bytes_end - bytes) * 3 / 4;
       String* str = String::create(state, 0, num_bytes);
       uint8_t *buf = str->byte_address();
@@ -208,12 +210,11 @@ namespace rubinius {
       return str;
     }
 
-    String* uu_decode(STATE, const char*& bytes, size_t remainder) {
+    String* uu_decode(STATE, const char*& bytes, const char* bytes_end, size_t remainder) {
       if(remainder == 0) {
         return String::create(state, 0, 0);
       }
 
-      const char* bytes_end = bytes + remainder;
       native_int length = 0, num_bytes = (bytes_end - bytes) * 3 / 4;
       String* str = String::create(state, 0, num_bytes);
       uint8_t *buf = str->byte_address();
@@ -263,6 +264,85 @@ namespace rubinius {
       buf[length] = 0;
       str->num_bytes(state, Fixnum::from(length));
       return str;
+    }
+
+    static const int32_t utf8_limits[] = {
+      0x0,        /* 1 */
+      0x80,       /* 2 */
+      0x800,      /* 3 */
+      0x10000,    /* 4 */
+      0x200000,   /* 5 */
+      0x4000000,  /* 6 */
+      0x80000000, /* 7 */
+    };
+
+#define MALFORMED_UTF8_ERROR_SIZE 60
+
+    void utf8_decode(STATE, Array* array,
+                     const char* bytes, const char* bytes_end,
+                     size_t count, size_t& index)
+    {
+      int length;
+
+      for(; count > 0 && bytes < bytes_end; count--) {
+        native_int remainder = bytes_end - bytes;
+        int32_t c = *bytes++ & 0xff, value = c;
+        int n = 0;
+        length = 1;
+
+        if(value & 0x80) {
+          if(!(value & 0x40)) {
+            Exception::argument_error(state, "malformed UTF-8 character");
+          }
+
+          if(!(value & 0x20)) {
+            n = 2;
+            value &= 0x1f;
+          } else if(!(value & 0x10)) {
+            n = 3;
+            value &= 0x0f;
+          } else if(!(value & 0x08)) {
+            n = 4;
+            value &= 0x07;
+          } else if(!(value & 0x04)) {
+            n = 5;
+            value &= 0x03;
+          } else if(!(value & 0x02)) {
+            n = 6;
+            value &= 0x01;
+          } else {
+            Exception::argument_error(state, "malformed UTF-8 character");
+          }
+
+          if(n > remainder) {
+            char error_msg[MALFORMED_UTF8_ERROR_SIZE];
+            snprintf(error_msg, MALFORMED_UTF8_ERROR_SIZE,
+                    "malformed UTF-8 character (expected %d bytes, given %d bytes)",
+                    n, (int)remainder);
+            Exception::argument_error(state, error_msg);
+          }
+
+          length = n--;
+          if(n != 0) {
+            while(n--) {
+              c = *bytes++ & 0xff;
+              if((c & 0xc0) != 0x80) {
+                Exception::argument_error(state, "malformed UTF-8 character");
+              } else {
+                c &= 0x3f;
+                value = value << 6 | c;
+              }
+            }
+          }
+
+          if(value < utf8_limits[length-1]) {
+            Exception::argument_error(state, "redundant UTF-8 sequence");
+          }
+        }
+
+        array->append(state, Integer::from(state, value));
+        index += length;
+      }
     }
 
     String* bit_high(STATE, const char*& bytes, size_t count) {
@@ -433,6 +513,7 @@ namespace rubinius {
     Array* array = Array::create(state, 0);
     OnStack<2> sv(state, self, array);
     const char* bytes = 0;
+    const char* bytes_end = 0;
 
     size_t bytes_size = self->size();
     size_t index = 0;

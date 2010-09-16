@@ -206,8 +206,12 @@
 
   # String / Encoding helpers
 
-  action byte_address {
+  action bytes {
     bytes = (const char*)self->byte_address() + index;
+  }
+
+  action bytes_end {
+    bytes_end = (const char*)self->byte_address() + bytes_size;
   }
 
   action string_width {
@@ -298,15 +302,25 @@
   }
 
   action M {
-    array->append(state, unpack::quotable_printable(state, bytes, remainder));
+    array->append(state, unpack::quotable_printable(state, bytes, bytes_end, remainder));
   }
 
   action m {
-    array->append(state, unpack::base64_decode(state, bytes, remainder));
+    array->append(state, unpack::base64_decode(state, bytes, bytes_end, remainder));
+  }
+
+  action U {
+    if(rest) {
+      count = remainder;
+    } else if(count > remainder) {
+      count = remainder;
+    }
+
+    unpack::utf8_decode(state, array, bytes, bytes_end, count, index);
   }
 
   action u {
-    array->append(state, unpack::uu_decode(state, bytes, remainder));
+    array->append(state, unpack::uu_decode(state, bytes, bytes_end, remainder));
   }
 
   action non_native_error {
