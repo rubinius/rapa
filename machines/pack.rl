@@ -14,6 +14,8 @@
   platform_modifier = ([_!] %platform)? count_modifier;
   modifier          = count_modifier | [_!] @non_native_error;
 
+  comment = '#' [^\n]* '\n'?;
+
   # Integers
   S = (('S' | 's') platform_modifier) %check_size %S;
   I = (('I' | 'i') platform_modifier) %check_size %I;
@@ -62,7 +64,7 @@
 
   directives = integers | strings | encodings | moves | floats;
 
-  main := (directives >start ignored)+ %done;
+  main := ((directives >start) | comment | ignored)** %done;
 
   write data;
   write init;
