@@ -222,6 +222,10 @@
     pack::b64_uu_encode(s, str, count, pack::uu_table, '`', true);
   }
 
+  action w {
+    pack_ber
+  }
+
   # Floats
 
   action D {

@@ -58,12 +58,13 @@
   h = ('h' modifier) %bytes %hex_width %remainder %string_size %h %index_increment;
   M = ('M' modifier) %bytes %bytes_end %remainder %M %index_increment;
   m = ('m' modifier) %bytes %bytes_end %remainder %m %index_increment;
-  U = ('U' modifier) %bytes %bytes_end %remainder %U;
+  U = ('U' modifier) %bytes %bytes_end %remainder %rest_count %U;
   u = ('u' modifier) %bytes %bytes_end %remainder %u %index_increment;
+  w = ('w' modifier) %bytes %bytes_end %remainder %rest_count %w;
 
   integers  = C | c | S | s | I | i | L | l | N | n | V | v | Q | q;
   floats    = D | E | e | F | G | g;
-  encodings = B | b | H | h | M | m | U | u;
+  encodings = B | b | H | h | M | m | U | u | w;
   strings   = A | a | Z;
   moves     = X | x | at;
 

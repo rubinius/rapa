@@ -230,6 +230,14 @@
     remainder = bytes_size - index;
   }
 
+  action rest_count {
+    if(rest) {
+      count = remainder;
+    } else if(count > remainder) {
+      count = remainder;
+    }
+  }
+
   action string_size {
     if(rest || count > remainder * width) {
       count = remainder * width;
@@ -310,17 +318,16 @@
   }
 
   action U {
-    if(rest) {
-      count = remainder;
-    } else if(count > remainder) {
-      count = remainder;
-    }
-
     unpack::utf8_decode(state, array, bytes, bytes_end, count, index);
   }
 
   action u {
     array->append(state, unpack::uu_decode(state, bytes, bytes_end, remainder));
+  }
+
+  action w {
+    unpack::ber_decode(state, array, bytes, bytes_end, count, index);
+    index = bytes - (const char*)self->byte_address();
   }
 
   action non_native_error {

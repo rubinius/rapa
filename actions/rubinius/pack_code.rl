@@ -212,7 +212,7 @@ namespace rubinius {
       }
     }
 
-    void utf8(STATE, std::string& str, Integer* value) {
+    void utf8_encode(STATE, std::string& str, Integer* value) {
       int32_t v = int32_element(state, value);
 
       if(!(v & ~0x7f)) {
@@ -244,6 +244,54 @@ namespace rubinius {
         str.push_back((v & 0x3f) | 0x80);
       } else {
         Exception::range_error(state, "pack('U') value out of range");
+      }
+    }
+
+    void ber_encode(STATE, std::string& str, Integer* value) {
+      if(!value->positive_p()) {
+        Exception::argument_error(state, "cannot BER compress a negative number");
+      }
+
+      std::string buf;
+
+      if(try_as<Bignum>(value)) {
+        static Fixnum* base = Fixnum::from(128);
+        while(try_as<Bignum>(value)) {
+          Array* ary;
+          if(value->fixnum_p()) {
+            ary = as<Fixnum>(value)->divmod(state, base);
+          } else {
+            ary = as<Bignum>(value)->divmod(state, base);
+          }
+          buf.push_back(as<Fixnum>(ary->get(state, 1))->to_native() | 0x80);
+          value = as<Integer>(ary->get(state, 0));
+        }
+      }
+
+      long v = value->to_long();
+
+      while(v) {
+        buf.push_back((v & 0x7f) | 0x80);
+        v >>= 7;
+      }
+
+      if(buf.size() > 0) {
+        char* a = const_cast<char*>(buf.c_str());
+        char* b = a + buf.size() - 1;
+
+        // clear continue bit
+        *a &= 0x7f;
+
+        // reverse string
+        while(a < b) {
+          int k = *a;
+          *a++ = *b;
+          *b-- = k;
+        }
+
+        str.append(buf.c_str(), buf.size());
+      } else {
+        str.push_back(0);
       }
     }
 
@@ -396,8 +444,11 @@ namespace rubinius {
 #define pack_float_le                 pack_float_elements(pack_float_element_le)
 #define pack_float_be                 pack_float_elements(pack_float_element_be)
 
-#define pack_utf8_element(v)          pack::utf8(state, str, v)
+#define pack_utf8_element(v)          pack::utf8_encode(state, str, v)
 #define pack_utf8                     pack_elements(Integer, pack::integer, pack_utf8_element)
+
+#define pack_ber_element(v)           pack::ber_encode(state, str, v)
+#define pack_ber                      pack_elements(Integer, pack::integer, pack_ber_element)
 
 #define pack_elements(T, coerce, format)        \
   for(; index < stop; index++) {                \

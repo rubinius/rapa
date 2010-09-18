@@ -55,10 +55,11 @@
   m = ('m' modifier) %string_check_size %b64_uu_size %m;
   U = ('U' modifier) %check_size %U;
   u = ('u' modifier) %string_check_size %b64_uu_size %u;
+  w = ('w' modifier) %check_size %w;
 
   integers  = C | S | I | L | n | N | v | V | Q;
   floats    = D | E | e | F | G | g;
-  encodings = B | b | H | h | M | m | U | u;
+  encodings = B | b | H | h | M | m | U | u | w;
   strings   = A | a | Z;
   moves     = X | x | at;
 

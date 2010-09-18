@@ -345,6 +345,53 @@ namespace rubinius {
       }
     }
 
+    void ber_decode(STATE, Array* array,
+                     const char*& bytes, const char* bytes_end,
+                     size_t count, size_t& index)
+    {
+      static unsigned long mask = 0xfeUL << ((sizeof(unsigned long) - 1) * 8);
+      static Fixnum* base = Fixnum::from(128);
+      unsigned long value = 0;
+
+      while(count > 0 && bytes < bytes_end) {
+        value <<= 7;
+        value |= (*bytes & 0x7f);
+        if(!(*bytes++ & 0x80)) {
+          array->append(state, Integer::from(state, value));
+          count--;
+          value = 0;
+        } else if(value & mask) {
+          Integer* result = Integer::from(state, value);
+
+          while(bytes < bytes_end) {
+            if(result->fixnum_p()) {
+              result = as<Fixnum>(result)->mul(state, base);
+            } else {
+              result = as<Bignum>(result)->mul(state, base);
+            }
+
+            Fixnum* b = Fixnum::from(*bytes & 0x7f);
+            if(result->fixnum_p()) {
+              result = as<Fixnum>(result)->add(state, b);
+            } else {
+              result = as<Bignum>(result)->add(state, b);
+            }
+
+            if(!(*bytes++ & 0x80)) {
+              if(result->fixnum_p()) {
+                array->append(state, result);
+              } else {
+                array->append(state, Bignum::normalize(state, as<Bignum>(result)));
+              }
+              count--;
+              value = 0;
+              break;
+            }
+          }
+        }
+      }
+    }
+
     String* bit_high(STATE, const char*& bytes, size_t count) {
       String* str = String::create(state, 0, count);
       uint8_t *buf = str->byte_address();
