@@ -42,9 +42,9 @@
   at = ('@' modifier) %at;
 
   # Strings
-  A = ('A' modifier) %string_check_size %A;
-  a = ('a' modifier) %string_check_size %a;
-  Z = ('Z' modifier) %string_check_size %Z;
+  A = ('A' modifier) %string_check_size %string_value %string_append %A;
+  a = ('a' modifier) %string_check_size %string_value %string_append %a;
+  Z = ('Z' modifier) %string_check_size %string_value %string_append %Z;
 
   # Encodings
   B = ('B' modifier) %string_check_size %B;

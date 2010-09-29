@@ -479,26 +479,6 @@ namespace rubinius {
     format;                                     \
   }
 
-#define PACK_STRING_ELEMENT(coerce)  {                              \
-  Object* item = self->get(state, index);                           \
-  String* value = try_as<String>(item);                             \
-  if(!value) {                                                      \
-    value = pack::encoding_string(state, call_frame, item, coerce); \
-    if(!value) return 0;                                            \
-  }                                                                 \
-  if(RTEST(value->tainted_p(state))) tainted = true;                \
-  size_t size = value->size();                                      \
-  if(rest) count = size;                                            \
-  if(count <= size) {                                               \
-    str.append((const char*)value->byte_address(), count);          \
-    count = 0;                                                      \
-  } else {                                                          \
-    str.append((const char*)value->byte_address(), size);           \
-    count = count - size;                                           \
-  }                                                                 \
-  index++;                                                          \
-}
-
 #define BYTE1(x)        (((x) & 0x00000000000000ff))
 #define BYTE2(x)        (((x) & 0x000000000000ff00) >> 8)
 #define BYTE3(x)        (((x) & 0x0000000000ff0000) >> 16)
@@ -600,6 +580,7 @@ namespace rubinius {
 
     int int_value = 0;
     long long long_value = 0;
+    String* string_value = 0;
     std::string str("");
 
     // Use information we have to reduce repeated allocation.
