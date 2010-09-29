@@ -88,15 +88,12 @@
   # Moves
 
   action X {
-#define INVALID_MOVE_ERROR_SIZE 48
-
     if(rest) count = 0;
 
     if(count > str.size()) {
-      char invalid_move_msg[INVALID_MOVE_ERROR_SIZE];
-      snprintf(invalid_move_msg, INVALID_MOVE_ERROR_SIZE,
-               "X%d exceeds length of string", (int)count);
-      Exception::argument_error(state, invalid_move_msg);
+      std::ostringstream msg;
+      msg << "X" << count << " exceeds length of string";
+      Exception::argument_error(state, msg.str().c_str());
     }
 
     str.resize(str.size() - count);
@@ -259,12 +256,9 @@
   }
 
   action non_native_error {
-#define NON_NATIVE_ERROR_SIZE 36
-
-    char non_native_msg[NON_NATIVE_ERROR_SIZE];
-    snprintf(non_native_msg, NON_NATIVE_ERROR_SIZE,
-             "'%c' allowed only after types sSiIlL", *p);
-    Exception::argument_error(state, non_native_msg);
+    std::ostringstream msg;
+    msg << "'" << *p << "' allowed only after types sSiIlL";
+    Exception::argument_error(state, msg.str().c_str());
   }
 
   action done {

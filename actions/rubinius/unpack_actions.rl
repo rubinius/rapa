@@ -194,13 +194,10 @@
   }
 
   action check_bounds {
-#define OOB_ERROR_SIZE 20
-
     if(index < 0 || index > bytes_size) {
-      char oob_error_msg[OOB_ERROR_SIZE];
-      snprintf(oob_error_msg, OOB_ERROR_SIZE,
-               "%c outside of string", *p);
-      Exception::argument_error(state, oob_error_msg);
+      std::ostringstream msg;
+      msg << *p << " outside of string";
+      Exception::argument_error(state, msg.str().c_str());
     }
   }
 
@@ -331,11 +328,8 @@
   }
 
   action non_native_error {
-#define NON_NATIVE_ERROR_SIZE 36
-
-    char non_native_msg[NON_NATIVE_ERROR_SIZE];
-    snprintf(non_native_msg, NON_NATIVE_ERROR_SIZE,
-             "'%c' allowed only after types sSiIlL", *p);
+    std::ostringstream msg;
+    msg << "'" << *p << "' allowed only after types sSiIlL";
     Exception::argument_error(state, non_native_msg);
   }
 

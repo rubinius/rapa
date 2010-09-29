@@ -7,6 +7,7 @@
  */
 
 #include <stdint.h>
+#include <sstream>
 
 #include "vm/config.h"
 
