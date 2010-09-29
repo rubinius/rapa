@@ -120,9 +120,21 @@
 
   # Strings
 
-  action string_value {
+  action to_str_nil {
     string_value = pack::encoding_string(state, call_frame,
         self->get(state, index++), "to_str_or_nil");
+    if(!string_value) return 0;
+  }
+
+  action to_str {
+    string_value = pack::encoding_string(state, call_frame,
+        self->get(state, index++), "to_str");
+    if(!string_value) return 0;
+  }
+
+  action to_s {
+    string_value = pack::encoding_string(state, call_frame,
+        self->get(state, index++), "to_s");
     if(!string_value) return 0;
   }
 
@@ -158,56 +170,36 @@
   # Encodings
 
   action B {
-    String* s = pack::encoding_string(state, call_frame,
-        self->get(state, index++), "to_str_or_nil");
-    if(!s) return 0;
+    size_t extra = pack::bit_extra(string_value, rest, count);
 
-    size_t extra = pack::bit_extra(s, rest, count);
-
-    pack::bit_high(s, str, count);
+    pack::bit_high(string_value, str, count);
     if(extra > 0) str.append(extra, '\0');
   }
 
   action b {
-    String* s = pack::encoding_string(state, call_frame,
-        self->get(state, index++), "to_str_or_nil");
-    if(!s) return 0;
+    size_t extra = pack::bit_extra(string_value, rest, count);
 
-    size_t extra = pack::bit_extra(s, rest, count);
-
-    pack::bit_low(s, str, count);
+    pack::bit_low(string_value, str, count);
     if(extra > 0) str.append(extra, '\0');
   }
 
   action H {
-    String* s = pack::encoding_string(state, call_frame,
-        self->get(state, index++), "to_str_or_nil");
-    if(!s) return 0;
+    size_t extra = pack::hex_extra(string_value, rest, count);
 
-    size_t extra = pack::hex_extra(s, rest, count);
-
-    pack::hex_high(s, str, count);
+    pack::hex_high(string_value, str, count);
     if(extra > 0) str.append(extra, '\0');
   }
 
   action h {
-    String* s = pack::encoding_string(state, call_frame,
-        self->get(state, index++), "to_str_or_nil");
-    if(!s) return 0;
+    size_t extra = pack::hex_extra(string_value, rest, count);
 
-    size_t extra = pack::hex_extra(s, rest, count);
-
-    pack::hex_low(s, str, count);
+    pack::hex_low(string_value, str, count);
     if(extra > 0) str.append(extra, '\0');
   }
 
   action M {
-    String* s = pack::encoding_string(state, call_frame,
-        self->get(state, index++), "to_s");
-    if(!s) return 0;
-
     if(rest || count < 2) count = 72;
-    pack::quotable_printable(s, str, count);
+    pack::quotable_printable(string_value, str, count);
   }
 
   action b64_uu_size {
@@ -219,11 +211,7 @@
   }
 
   action m {
-    String* s = pack::encoding_string(state, call_frame,
-        self->get(state, index++), "to_str");
-    if(!s) return 0;
-
-    pack::b64_uu_encode(s, str, count, pack::b64_table, '=', false);
+    pack::b64_uu_encode(string_value, str, count, pack::b64_table, '=', false);
   }
 
   action U {
@@ -231,11 +219,7 @@
   }
 
   action u {
-    String* s = pack::encoding_string(state, call_frame,
-        self->get(state, index++), "to_str");
-    if(!s) return 0;
-
-    pack::b64_uu_encode(s, str, count, pack::uu_table, '`', true);
+    pack::b64_uu_encode(string_value, str, count, pack::uu_table, '`', true);
   }
 
   action w {

@@ -42,19 +42,19 @@
   at = ('@' modifier) %at;
 
   # Strings
-  A = ('A' modifier) %string_check_size %string_value %string_append %A;
-  a = ('a' modifier) %string_check_size %string_value %string_append %a;
-  Z = ('Z' modifier) %string_check_size %string_value %string_append %Z;
+  A = ('A' modifier) %string_check_size %to_str_nil %string_append %A;
+  a = ('a' modifier) %string_check_size %to_str_nil %string_append %a;
+  Z = ('Z' modifier) %string_check_size %to_str_nil %string_append %Z;
 
   # Encodings
-  B = ('B' modifier) %string_check_size %B;
-  b = ('b' modifier) %string_check_size %b;
-  H = ('H' modifier) %string_check_size %H;
-  h = ('h' modifier) %string_check_size %h;
-  M = ('M' modifier) %string_check_size %M;
-  m = ('m' modifier) %string_check_size %b64_uu_size %m;
+  B = ('B' modifier) %string_check_size %to_str_nil %B;
+  b = ('b' modifier) %string_check_size %to_str_nil %b;
+  H = ('H' modifier) %string_check_size %to_str_nil %H;
+  h = ('h' modifier) %string_check_size %to_str_nil %h;
+  M = ('M' modifier) %string_check_size %to_s %M;
+  m = ('m' modifier) %string_check_size %b64_uu_size %to_str %m;
   U = ('U' modifier) %check_size %U;
-  u = ('u' modifier) %string_check_size %b64_uu_size %u;
+  u = ('u' modifier) %string_check_size %b64_uu_size %to_str %u;
   w = ('w' modifier) %check_size %w;
 
   integers  = C | S | I | L | n | N | v | V | Q;
