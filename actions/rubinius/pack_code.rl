@@ -25,7 +25,7 @@
 
 namespace rubinius {
   namespace pack {
-    inline static Object* to_int(STATE, CallFrame* call_frame, Object* obj) {
+    inline Object* to_int(STATE, CallFrame* call_frame, Object* obj) {
       Array* args = Array::create(state, 1);
       args->set(state, 0, obj);
 
@@ -56,14 +56,14 @@ namespace rubinius {
       }
     }
 
-    inline static Object* to_f(STATE, CallFrame* call_frame, Object* obj) {
+    inline Object* to_f(STATE, CallFrame* call_frame, Object* obj) {
       Array* args = Array::create(state, 1);
       args->set(state, 0, obj);
 
       return G(rubinius)->send(state, call_frame, state->symbol("pack_to_float"), args);
     }
 
-    inline static String* encoding_string(STATE, CallFrame* call_frame, Object* obj,
+    inline String* encoding_string(STATE, CallFrame* call_frame, Object* obj,
                                           const char* coerce_name)
     {
       String* s = try_as<String>(obj);
@@ -103,7 +103,7 @@ namespace rubinius {
              |((x & 0x000000ff00000000LL) >> 8));
     }
 
-    inline static void swap_float(std::string& str, float value) {
+    inline void swap_float(std::string& str, float value) {
       uint32_t x;
 
       memcpy(&x, &value, sizeof(float));
@@ -112,7 +112,7 @@ namespace rubinius {
       str.append((const char*)&x, sizeof(uint32_t));
     }
 
-    inline static void swap_double(std::string& str, double value) {
+    inline void swap_double(std::string& str, double value) {
       uint64_t x;
 
       memcpy(&x, &value, sizeof(double));
@@ -121,11 +121,11 @@ namespace rubinius {
       str.append((const char*)&x, sizeof(uint64_t));
     }
 
-    inline static void double_element(std::string& str, double value) {
+    inline void double_element(std::string& str, double value) {
       str.append((const char*)&value, sizeof(double));
     }
 
-    inline static void float_element(std::string& str, float value) {
+    inline void float_element(std::string& str, float value) {
       str.append((const char*)&value, sizeof(float));
     }
 
@@ -141,7 +141,7 @@ namespace rubinius {
       str.append((const char*)&value, sizeof(int64_t));
     }
 
-    inline static int32_t int32_element(STATE, Integer* value) {
+    inline int32_t int32_element(STATE, Integer* value) {
       if(value->fixnum_p()) {
         long l = as<Fixnum>(value)->to_long();
         if(l > INT32_MAX || l < INT32_MIN) {
@@ -157,7 +157,7 @@ namespace rubinius {
 
 #define QUOTABLE_PRINTABLE_BUFSIZE 1024
 
-    static void quotable_printable(String* s, std::string& str, int count) {
+    void quotable_printable(String* s, std::string& str, int count) {
       static char hex_table[] = "0123456789ABCDEF";
       char buf[QUOTABLE_PRINTABLE_BUFSIZE];
 
@@ -219,7 +219,7 @@ namespace rubinius {
 #define b64_uu_byte3(t, b, c)   t[077 & (((b[1] << 2) & 074) | ((c >> 6) & 03))];
 #define b64_uu_byte4(t, b)      t[077 & b[2]];
 
-    static void b64_uu_encode(String* s, std::string& str, size_t count,
+    void b64_uu_encode(String* s, std::string& str, size_t count,
                               const char* table, int padding, bool encode_size)
     {
       char *buf = ALLOCA_N(char, count * 4 / 3 + 6);
@@ -339,7 +339,7 @@ namespace rubinius {
       }
     }
 
-    inline static size_t bit_extra(String* s, bool rest, size_t& count) {
+    inline size_t bit_extra(String* s, bool rest, size_t& count) {
       size_t extra = 0;
 
       if(rest) {
@@ -355,7 +355,7 @@ namespace rubinius {
       return extra;
     }
 
-    static void bit_high(String* s, std::string& str, size_t count) {
+    void bit_high(String* s, std::string& str, size_t count) {
       uint8_t* b = s->byte_address();
       int byte = 0;
 
@@ -375,7 +375,7 @@ namespace rubinius {
       }
     }
 
-    static void bit_low(String* s, std::string& str, size_t count) {
+    void bit_low(String* s, std::string& str, size_t count) {
       uint8_t* b = s->byte_address();
       int byte = 0;
 
@@ -397,7 +397,7 @@ namespace rubinius {
       }
     }
 
-    inline static size_t hex_extra(String* s, bool rest, size_t& count) {
+    inline size_t hex_extra(String* s, bool rest, size_t& count) {
       size_t extra = 0;
 
       if(rest) {
@@ -413,7 +413,7 @@ namespace rubinius {
       return extra;
     }
 
-    static void hex_high(String* s, std::string& str, size_t count) {
+    void hex_high(String* s, std::string& str, size_t count) {
       uint8_t* b = s->byte_address();
       int byte = 0;
 
@@ -437,7 +437,7 @@ namespace rubinius {
       }
     }
 
-    static void hex_low(String* s, std::string& str, size_t count) {
+    void hex_low(String* s, std::string& str, size_t count) {
       uint8_t* b = s->byte_address();
       int byte = 0;
 
