@@ -42,47 +42,47 @@
   # Integers
 
   action C {
-    PACK_INT_ELEMENTS(MASK_BYTE);
+    pack_byte;
   }
 
   action S {
-    PACK_INT_ELEMENTS(MASK_16BITS);
+    pack_short;
   }
 
   action I {
-    PACK_INT_ELEMENTS(MASK_32BITS);
+    pack_int;
   }
 
   action L {
     if(platform) {
 #if RBX_SIZEOF_LONG == 4
-      PACK_INT_ELEMENTS(MASK_32BITS);
+      pack_int;
 #else
-      PACK_LONG_ELEMENTS(MASK_64BITS);
+      pack_long;
 #endif
     } else {
-      PACK_INT_ELEMENTS(MASK_32BITS);
+      pack_int;
     }
   }
 
   action n {
-    PACK_INT_ELEMENTS(BE_MASK_16BITS);
+    pack_short_be;
   }
 
   action N {
-    PACK_INT_ELEMENTS(BE_MASK_32BITS);
+    pack_int_be;
   }
 
   action v {
-    PACK_INT_ELEMENTS(LE_MASK_16BITS);
+    pack_short_le;
   }
 
   action V {
-    PACK_INT_ELEMENTS(LE_MASK_32BITS);
+    pack_int_le;
   }
 
   action Q {
-    PACK_LONG_ELEMENTS(MASK_64BITS);
+    pack_long;
   }
 
   # Moves
