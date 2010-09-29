@@ -28,18 +28,18 @@ namespace rubinius {
       }
     }
 
-    uint16_t swap16(uint16_t x) {
+    uint16_t swap_2bytes(uint16_t x) {
       return ((((x)&0xff)<<8) | (((x)>>8)&0xff));
     }
 
-    uint32_t swap32(uint32_t x) {
+    uint32_t swap_4bytes(uint32_t x) {
       return ((((x)&0xff)<<24)
              |(((x)>>24)&0xff)
              |(((x)&0x0000ff00)<<8)
              |(((x)&0x00ff0000)>>8));
     }
 
-    uint64_t swap64(uint64_t x) {
+    uint64_t swap_8bytes(uint64_t x) {
       return ((((x)&0x00000000000000ffLL)<<56)
              |(((x)&0xff00000000000000LL)>>56)
              |(((x)&0x000000000000ff00LL)<<40)
@@ -55,7 +55,7 @@ namespace rubinius {
       float y;
 
       memcpy(&x, str, sizeof(uint32_t));
-      x = swap32(x);
+      x = swap_4bytes(x);
       memcpy(&y, &x, sizeof(float));
 
       return y;
@@ -66,7 +66,7 @@ namespace rubinius {
       double y;
 
       memcpy(&x, str, sizeof(uint64_t));
-      x = swap64(x);
+      x = swap_8bytes(x);
       memcpy(&y, &x, sizeof(double));
 
       return y;
@@ -506,12 +506,12 @@ namespace rubinius {
 # define LE_S64BITS(p)     (S64BITS(p))
 # define LE_U64BITS(p)     (U64BITS(p))
 
-# define BE_S16BITS(p)     ((int16_t)(unpack::swap16(U16BITS(p))))
-# define BE_U16BITS(p)     ((uint16_t)(unpack::swap16(U16BITS(p))))
-# define BE_S32BITS(p)     ((int32_t)(unpack::swap32(U32BITS(p))))
-# define BE_U32BITS(p)     ((uint32_t)(unpack::swap32(U32BITS(p))))
-# define BE_S64BITS(p)     ((int64_t)(unpack::swap64(U64BITS(p))))
-# define BE_U64BITS(p)     ((uint64_t)(unpack::swap64(U64BITS(p))))
+# define BE_S16BITS(p)     ((int16_t)(unpack::swap_2bytes(U16BITS(p))))
+# define BE_U16BITS(p)     ((uint16_t)(unpack::swap_2bytes(U16BITS(p))))
+# define BE_S32BITS(p)     ((int32_t)(unpack::swap_4bytes(U32BITS(p))))
+# define BE_U32BITS(p)     ((uint32_t)(unpack::swap_4bytes(U32BITS(p))))
+# define BE_S64BITS(p)     ((int64_t)(unpack::swap_8bytes(U64BITS(p))))
+# define BE_U64BITS(p)     ((uint64_t)(unpack::swap_8bytes(U64BITS(p))))
 
 # define unpack_double            unpack_double_le
 # define unpack_float             unpack_float_le
@@ -522,12 +522,12 @@ namespace rubinius {
 # define unpack_double_be         unpack_float_elements(unpack::swap_double)
 # define unpack_float_be          unpack_float_elements(unpack::swap_float)
 #else
-# define LE_S16BITS(p)     ((int16_t)(unpack::swap16(U16BITS(p))))
-# define LE_U16BITS(p)     ((uint16_t)(unpack::swap16(U16BITS(p))))
-# define LE_S32BITS(p)     ((int32_t)(unpack::swap32(U32BITS(p))))
-# define LE_U32BITS(p)     ((uint32_t)(unpack::swap32(U32BITS(p))))
-# define LE_S64BITS(p)     ((int64_t)(unpack::swap64(U64BITS(p))))
-# define LE_U64BITS(p)     ((uint64_t)(unpack::swap64(U64BITS(p))))
+# define LE_S16BITS(p)     ((int16_t)(unpack::swap_2bytes(U16BITS(p))))
+# define LE_U16BITS(p)     ((uint16_t)(unpack::swap_2bytes(U16BITS(p))))
+# define LE_S32BITS(p)     ((int32_t)(unpack::swap_4bytes(U32BITS(p))))
+# define LE_U32BITS(p)     ((uint32_t)(unpack::swap_4bytes(U32BITS(p))))
+# define LE_S64BITS(p)     ((int64_t)(unpack::swap_8bytes(U64BITS(p))))
+# define LE_U64BITS(p)     ((uint64_t)(unpack::swap_8bytes(U64BITS(p))))
 
 # define BE_S16BITS(p)     (S16BITS(p))
 # define BE_U16BITS(p)     (U16BITS(p))

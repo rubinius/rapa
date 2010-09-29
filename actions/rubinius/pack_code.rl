@@ -5,6 +5,8 @@
  * vim: filetype=cpp
  */
 
+#include <stdint.h>
+
 #include "vm/config.h"
 
 #include "vm.hpp"
@@ -28,6 +30,13 @@ namespace rubinius {
       return G(rubinius)->send(state, call_frame, state->symbol("pack_to_int"), args);
     }
 
+    static Object* float_t(STATE, CallFrame* call_frame, Object* obj) {
+      Array* args = Array::create(state, 1);
+      args->set(state, 0, obj);
+
+      return G(rubinius)->send(state, call_frame, state->symbol("pack_to_float"), args);
+    }
+
     inline static String* encoding_string(STATE, CallFrame* call_frame, Object* obj,
                                           const char* coerce_name)
     {
@@ -46,25 +55,18 @@ namespace rubinius {
       return as<String>(result);
     }
 
-    static Object* float_t(STATE, CallFrame* call_frame, Object* obj) {
-      Array* args = Array::create(state, 1);
-      args->set(state, 0, obj);
-
-      return G(rubinius)->send(state, call_frame, state->symbol("pack_to_float"), args);
-    }
-
-    inline uint16_t swap16(uint16_t x) {
+    inline uint16_t swap_2bytes(uint16_t x) {
       return (((x & 0x00ff)<<8) | ((x & 0xff00)>>8));
     }
 
-    inline uint32_t swap32(uint32_t x) {
+    inline uint32_t swap_4bytes(uint32_t x) {
       return (((x & 0x000000ff) << 24)
              |((x & 0xff000000) >> 24)
              |((x & 0x0000ff00) << 8)
              |((x & 0x00ff0000) >> 8));
     }
 
-    inline uint64_t swap64(uint64_t x) {
+    inline uint64_t swap_8bytes(uint64_t x) {
       return (((x & 0x00000000000000ffLL) << 56)
              |((x & 0xff00000000000000LL) >> 56)
              |((x & 0x000000000000ff00LL) << 40)
@@ -79,7 +81,7 @@ namespace rubinius {
       uint32_t x;
 
       memcpy(&x, &value, sizeof(float));
-      x = swap32(x);
+      x = swap_4bytes(x);
 
       str.append((const char*)&x, sizeof(uint32_t));
     }
@@ -88,7 +90,7 @@ namespace rubinius {
       uint64_t x;
 
       memcpy(&x, &value, sizeof(double));
-      x = swap64(x);
+      x = swap_8bytes(x);
 
       str.append((const char*)&x, sizeof(uint64_t));
     }
