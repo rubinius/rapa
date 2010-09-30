@@ -599,7 +599,7 @@ namespace rubinius {
 
 }%%
 
-    if(pack_first_final && pack_error && pack_en_main) {
+    if(en_main) {
       // do nothing
     }
 

@@ -587,7 +587,7 @@ namespace rubinius {
 
 }%%
 
-    if(unpack_first_final && unpack_error && unpack_en_main) {
+    if(en_main) {
       // do nothing
     }
 

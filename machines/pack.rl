@@ -67,7 +67,7 @@
 
   main := ((directives >start) | comment | ignored)** %done;
 
-  write data;
+  write data nofinal noerror noprefix;
   write init;
   write exec;
 
