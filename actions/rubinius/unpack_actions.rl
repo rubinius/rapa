@@ -75,75 +75,75 @@
   # Integers
 
   action C {
-    UNPACK_ELEMENTS(FIXNUM, UBYTE);
+    unpack_integer(ubyte);
   }
 
   action c {
-    UNPACK_ELEMENTS(FIXNUM, SBYTE);
+    unpack_integer(sbyte);
   }
 
   action S {
-    UNPACK_ELEMENTS(FIXNUM, U16BITS);
+    unpack_integer(u2bytes);
   }
 
   action s {
-    UNPACK_ELEMENTS(FIXNUM, S16BITS);
+    unpack_integer(s2bytes);
   }
 
   action I {
-    UNPACK_ELEMENTS(INTEGER, U32BITS);
+    unpack_integer(u4bytes);
   }
 
   action i {
-    UNPACK_ELEMENTS(INTEGER, S32BITS);
+    unpack_integer(s4bytes);
   }
 
   action L {
     if(platform) {
 #if RBX_SIZEOF_LONG == 4
-      UNPACK_ELEMENTS(INTEGER, U32BITS);
+      unpack_integer(u4bytes);
 #else
-      UNPACK_ELEMENTS(INTEGER, U64BITS);
+      unpack_integer(u8bytes);
 #endif
     } else {
-      UNPACK_ELEMENTS(INTEGER, U32BITS);
+      unpack_integer(u4bytes);
     }
   }
 
   action l {
     if(platform) {
 #if RBX_SIZEOF_LONG == 4
-      UNPACK_ELEMENTS(INTEGER, S32BITS);
+      unpack_integer(s4bytes);
 #else
-      UNPACK_ELEMENTS(INTEGER, S64BITS);
+      unpack_integer(s8bytes);
 #endif
     } else {
-      UNPACK_ELEMENTS(INTEGER, S32BITS);
+      unpack_integer(s4bytes);
     }
   }
 
   action N {
-    UNPACK_ELEMENTS(INTEGER, BE_U32BITS);
+    unpack_integer(u4bytes_be);
   }
 
   action n {
-    UNPACK_ELEMENTS(FIXNUM, BE_U16BITS);
+    unpack_integer(u2bytes_be);
   }
 
   action V {
-    UNPACK_ELEMENTS(INTEGER, LE_U32BITS);
+    unpack_integer(u4bytes_le);
   }
 
   action v {
-    UNPACK_ELEMENTS(FIXNUM, LE_U16BITS);
+    unpack_integer(u2bytes_le);
   }
 
   action Q {
-    UNPACK_ELEMENTS(INTEGER, U64BITS);
+    unpack_integer(u8bytes);
   }
 
   action q {
-    UNPACK_ELEMENTS(INTEGER, S64BITS);
+    unpack_integer(s8bytes);
   }
 
   # Floats
@@ -330,7 +330,7 @@
   action non_native_error {
     std::ostringstream msg;
     msg << "'" << *p << "' allowed only after types sSiIlL";
-    Exception::argument_error(state, non_native_msg);
+    Exception::argument_error(state, msg.str().c_str());
   }
 
   action done {
