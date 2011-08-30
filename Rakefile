@@ -4,9 +4,18 @@ if dir = ENV["DIR"]
 else
   OUT_DIR = File.expand_path "../", __FILE__
 end
-MACHINES  = DIR + "/machines"
-RUBINIUS  = DIR + "/actions/rubinius"
-RUBINIUS_RAGEL = "ragel -C -G1 -I #{MACHINES} -I #{RUBINIUS}"
+
+def machines(version)
+  DIR + "/machines/#{version}"
+end
+
+def rubinius(version)
+  DIR + "/actions/rubinius/#{version}"
+end
+
+def rubinius_ragel(version)
+  "ragel -C -G1 -I #{machines(version)} -I #{rubinius(version)}"
+end
 
 # The Ragel generated line info is a mess. This just strips the
 # info so that any compile errors are reported directly from the
@@ -25,19 +34,23 @@ namespace :build do
 
   namespace :rbx do
     task :pack do
-      input  = "#{RUBINIUS}/pack_code.rl"
-      output = "#{OUT_DIR}/pack.cpp"
+      ["18", "19"].each do |version|
+        input  = "#{rubinius(version)}/pack_code.rl"
+        output = "#{OUT_DIR}/pack#{version}.cpp"
 
-      sh "#{RUBINIUS_RAGEL} -o #{output} #{input}"
-      remove_line_references output, "vm/builtin/pack.cpp"
+        sh "#{rubinius_ragel(version)} -o #{output} #{input}"
+        remove_line_references output, "vm/builtin/pack#{version}.cpp"
+      end
     end
 
     task :unpack do
-      input  = "#{RUBINIUS}/unpack_code.rl"
-      output = "#{OUT_DIR}/unpack.cpp"
+      ["18", "19"].each do |version|
+        input  = "#{rubinius(version)}/unpack_code.rl"
+        output = "#{OUT_DIR}/unpack#{version}.cpp"
 
-      sh "#{RUBINIUS_RAGEL} -o #{output} #{input}"
-      remove_line_references output, "vm/builtin/unpack.cpp"
+        sh "#{rubinius_ragel(version)} -o #{output} #{input}"
+        remove_line_references output, "vm/builtin/unpack#{version}.cpp"
+      end
     end
   end
 end
