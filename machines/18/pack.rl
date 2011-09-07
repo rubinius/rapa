@@ -6,15 +6,11 @@
 
   include "pack_actions.rl";
 
-  ignored = (space | 0)*;
-
   count = digit >start_digit digit* @count;
 
   count_modifier    = '*' %rest | count?;
   platform_modifier = ([_!] %platform)? count_modifier;
   modifier          = count_modifier | [_!] @non_native_error;
-
-  comment = '#' [^\n]* '\n'?;
 
   # Integers
   S = (('S' | 's') platform_modifier) %check_size %S;
@@ -65,7 +61,7 @@
 
   directives = integers | strings | encodings | moves | floats;
 
-  main := ((directives >start) | comment | ignored)** %done;
+  main := (directives >start)* %done;
 
   write data nofinal noerror noprefix;
   write init;

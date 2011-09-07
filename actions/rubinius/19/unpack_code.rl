@@ -16,6 +16,7 @@
 #include "objectmemory.hpp"
 
 #include "builtin/array.hpp"
+#include "builtin/bytearray.hpp"
 #include "builtin/exception.hpp"
 #include "builtin/fixnum.hpp"
 #include "builtin/float.hpp"
@@ -23,7 +24,7 @@
 
 namespace rubinius {
 
-  namespace unpack {
+  namespace unpack19 {
     void inline increment(native_int& index, native_int n, native_int limit) {
       if(index + n < limit) {
         index += n;
@@ -448,7 +449,7 @@ namespace rubinius {
           bits = *bytes++;
         }
 
-        buf[i] = unpack::hexdigits[(bits >> 4) & 15];
+        buf[i] = unpack19::hexdigits[(bits >> 4) & 15];
       }
 
       return str;
@@ -466,10 +467,42 @@ namespace rubinius {
           bits = *bytes++;
         }
 
-        buf[i] = unpack::hexdigits[bits & 15];
+        buf[i] = unpack19::hexdigits[bits & 15];
       }
 
       return str;
+    }
+
+    ByteArray* prepare_directives(STATE, String* directives,
+                                  const char** p, const char** pe)
+    {
+      native_int size = directives->size();
+      ByteArray* ba = ByteArray::create_pinned(state, size);
+      char* b = reinterpret_cast<char*>(ba->raw_bytes());
+      char* d = reinterpret_cast<char*>(directives->byte_address());
+      int i = 0, j = 0;
+
+      while(i < size) {
+        switch(d[i]) {
+        case 0:
+        case ' ':
+          i++;
+          break;
+        case '#':
+          while(++i < size && d[i] != '\n')
+            ; // ignore
+          if(d[i] == '\n') i++;
+          break;
+        default:
+          b[j++] = d[i++];
+          break;
+        }
+      }
+
+      *p = const_cast<const char*>(b);
+      *pe = *p + j;
+
+      return ba;
     }
   }
 
@@ -514,12 +547,12 @@ namespace rubinius {
 # define s8bytes_le(p)            (s8bytes(p))
 # define u8bytes_le(p)            (u8bytes(p))
 
-# define s2bytes_be(p)            ((int16_t)(unpack::swap_2bytes(u2bytes(p))))
-# define u2bytes_be(p)            ((uint16_t)(unpack::swap_2bytes(u2bytes(p))))
-# define s4bytes_be(p)            ((int32_t)(unpack::swap_4bytes(u4bytes(p))))
-# define u4bytes_be(p)            ((uint32_t)(unpack::swap_4bytes(u4bytes(p))))
-# define s8bytes_be(p)            ((int64_t)(unpack::swap_8bytes(u8bytes(p))))
-# define u8bytes_be(p)            ((uint64_t)(unpack::swap_8bytes(u8bytes(p))))
+# define s2bytes_be(p)            ((int16_t)(unpack19::swap_2bytes(u2bytes(p))))
+# define u2bytes_be(p)            ((uint16_t)(unpack19::swap_2bytes(u2bytes(p))))
+# define s4bytes_be(p)            ((int32_t)(unpack19::swap_4bytes(u4bytes(p))))
+# define u4bytes_be(p)            ((uint32_t)(unpack19::swap_4bytes(u4bytes(p))))
+# define s8bytes_be(p)            ((int64_t)(unpack19::swap_8bytes(u8bytes(p))))
+# define u8bytes_be(p)            ((uint64_t)(unpack19::swap_8bytes(u8bytes(p))))
 
 # define unpack_double            unpack_double_le
 # define unpack_float             unpack_float_le
@@ -527,17 +560,17 @@ namespace rubinius {
 # define unpack_double_le         unpack_float_elements(double_bits)
 # define unpack_float_le          unpack_float_elements(float_bits)
 
-# define unpack_double_be         unpack_float_elements(unpack::swap_double)
-# define unpack_float_be          unpack_float_elements(unpack::swap_float)
+# define unpack_double_be         unpack_float_elements(unpack19::swap_double)
+# define unpack_float_be          unpack_float_elements(unpack19::swap_float)
 
 #else // Big endian
 
-# define s2bytes_le(p)            ((int16_t)(unpack::swap_2bytes(u2bytes(p))))
-# define u2bytes_le(p)            ((uint16_t)(unpack::swap_2bytes(u2bytes(p))))
-# define s4bytes_le(p)            ((int32_t)(unpack::swap_4bytes(u4bytes(p))))
-# define u4bytes_le(p)            ((uint32_t)(unpack::swap_4bytes(u4bytes(p))))
-# define s8bytes_le(p)            ((int64_t)(unpack::swap_8bytes(u8bytes(p))))
-# define u8bytes_le(p)            ((uint64_t)(unpack::swap_8bytes(u8bytes(p))))
+# define s2bytes_le(p)            ((int16_t)(unpack19::swap_2bytes(u2bytes(p))))
+# define u2bytes_le(p)            ((uint16_t)(unpack19::swap_2bytes(u2bytes(p))))
+# define s4bytes_le(p)            ((int32_t)(unpack19::swap_4bytes(u4bytes(p))))
+# define u4bytes_le(p)            ((uint32_t)(unpack19::swap_4bytes(u4bytes(p))))
+# define s8bytes_le(p)            ((int64_t)(unpack19::swap_8bytes(u8bytes(p))))
+# define u8bytes_le(p)            ((uint64_t)(unpack19::swap_8bytes(u8bytes(p))))
 
 # define s2bytes_be(p)            (s2bytes(p))
 # define u2bytes_be(p)            (u2bytes(p))
@@ -549,27 +582,26 @@ namespace rubinius {
 # define unpack_double            unpack_double_be
 # define unpack_float             unpack_float_be
 
-# define unpack_double_le         unpack_float_elements(unpack::swap_double)
-# define unpack_float_le          unpack_float_elements(unpack::swap_float)
+# define unpack_double_le         unpack_float_elements(unpack19::swap_double)
+# define unpack_float_le          unpack_float_elements(unpack19::swap_float)
 
 # define unpack_double_be         unpack_float_elements(double_bits)
 # define unpack_float_be          unpack_float_elements(float_bits)
 
 #endif
 
-  Array* String::unpack(STATE, String* directives) {
+  Array* String::unpack19(STATE, String* directives) {
     // Ragel-specific variables
-    std::string d(directives->c_str(), directives->size());
-    const char *p  = d.c_str();
-    const char *pe = p + d.size();
-
+    const char* p;
+    const char* pe;
+    ByteArray* d = unpack19::prepare_directives(state, directives, &p, &pe);
     const char *eof = pe;
     int cs;
 
     // pack-specific variables
     String* self = this;
     Array* array = Array::create(state, 0);
-    OnStack<2> sv(state, self, array);
+    OnStack<3> sv(state, self, array, d);
     const char* bytes = 0;
     const char* bytes_end = 0;
 

@@ -262,13 +262,13 @@
     }
 
     array->append(state, string);
-    unpack::increment(index, count, bytes_size);
+    unpack18::increment(index, count, bytes_size);
   }
 
   action a {
     array->append(state, String::create(state, bytes, count));
 
-    unpack::increment(index, count, bytes_size);
+    unpack18::increment(index, count, bytes_size);
   }
 
   action Z {
@@ -279,54 +279,54 @@
     array->append(state, String::create(state, bytes, c));
 
     if(rest) {
-      unpack::increment(index, c < count ? c + 1 : count, bytes_size);
+      unpack18::increment(index, c < count ? c + 1 : count, bytes_size);
     } else {
-      unpack::increment(index, count, bytes_size);
+      unpack18::increment(index, count, bytes_size);
     }
   }
 
   # Encodings
 
   action index_increment {
-    unpack::increment(index,
+    unpack18::increment(index,
                       bytes - ((const char*)self->byte_address() + index),
                       bytes_size);
   }
 
   action B {
-    array->append(state, unpack::bit_high(state, bytes, count));
+    array->append(state, unpack18::bit_high(state, bytes, count));
   }
 
   action b {
-    array->append(state, unpack::bit_low(state, bytes, count));
+    array->append(state, unpack18::bit_low(state, bytes, count));
   }
 
   action H {
-    array->append(state, unpack::hex_high(state, bytes, count));
+    array->append(state, unpack18::hex_high(state, bytes, count));
   }
 
   action h {
-    array->append(state, unpack::hex_low(state, bytes, count));
+    array->append(state, unpack18::hex_low(state, bytes, count));
   }
 
   action M {
-    array->append(state, unpack::quotable_printable(state, bytes, bytes_end, remainder));
+    array->append(state, unpack18::quotable_printable(state, bytes, bytes_end, remainder));
   }
 
   action m {
-    array->append(state, unpack::base64_decode(state, bytes, bytes_end, remainder));
+    array->append(state, unpack18::base64_decode(state, bytes, bytes_end, remainder));
   }
 
   action U {
-    unpack::utf8_decode(state, array, bytes, bytes_end, count, index);
+    unpack18::utf8_decode(state, array, bytes, bytes_end, count, index);
   }
 
   action u {
-    array->append(state, unpack::uu_decode(state, bytes, bytes_end, remainder));
+    array->append(state, unpack18::uu_decode(state, bytes, bytes_end, remainder));
   }
 
   action w {
-    unpack::ber_decode(state, array, bytes, bytes_end, count, index);
+    unpack18::ber_decode(state, array, bytes, bytes_end, count, index);
     index = bytes - (const char*)self->byte_address();
   }
 

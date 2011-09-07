@@ -17,6 +17,7 @@
 #include "objectmemory.hpp"
 
 #include "builtin/array.hpp"
+#include "builtin/bytearray.hpp"
 #include "builtin/exception.hpp"
 #include "builtin/float.hpp"
 #include "builtin/module.hpp"
@@ -28,7 +29,7 @@
 #endif
 
 namespace rubinius {
-  namespace pack {
+  namespace pack19 {
     inline Object* to_int(STATE, CallFrame* call_frame, Object* obj) {
       Array* args = Array::create(state, 1);
       args->set(state, 0, obj);
@@ -464,11 +465,43 @@ namespace rubinius {
         str.push_back(byte & 0xff);
       }
     }
+
+    ByteArray* prepare_directives(STATE, String* directives,
+                                  const char** p, const char** pe)
+    {
+      native_int size = directives->size();
+      ByteArray* ba = ByteArray::create_pinned(state, size);
+      char* b = reinterpret_cast<char*>(ba->raw_bytes());
+      char* d = reinterpret_cast<char*>(directives->byte_address());
+      int i = 0, j = 0;
+
+      while(i < size) {
+        switch(d[i]) {
+        case 0:
+        case ' ':
+          i++;
+          break;
+        case '#':
+          while(++i < size && d[i] != '\n')
+            ; // ignore
+          if(d[i] == '\n') i++;
+          break;
+        default:
+          b[j++] = d[i++];
+          break;
+        }
+      }
+
+      *p = const_cast<const char*>(b);
+      *pe = *p + j;
+
+      return ba;
+    }
   }
 
 
 // Pack Float elements
-#define pack_float_elements(format)   pack_elements(Float, pack::to_f, format)
+#define pack_float_elements(format)   pack_elements(Float, pack19::to_f, format)
 
 #define pack_double_le                pack_float_elements(pack_double_element_le)
 #define pack_double_be                pack_float_elements(pack_double_element_be)
@@ -477,9 +510,9 @@ namespace rubinius {
 #define pack_float_be                 pack_float_elements(pack_float_element_be)
 
 // Pack Integer elements
-#define pack_integer_elements(format) pack_elements(Integer, pack::to_int, format)
+#define pack_integer_elements(format) pack_elements(Integer, pack19::to_int, format)
 
-#define pack_byte_element(v)          str.push_back(pack::check_long(state, v))
+#define pack_byte_element(v)          str.push_back(pack19::check_long(state, v))
 #define pack_byte                     pack_integer_elements(pack_byte_element)
 
 #define pack_short_le                 pack_integer_elements(pack_short_element_le)
@@ -492,12 +525,12 @@ namespace rubinius {
 #define pack_long_be                  pack_integer_elements(pack_long_element_be)
 
 // Pack UTF-8 elements
-#define pack_utf8_element(v)          pack::utf8_encode(state, str, v)
-#define pack_utf8                     pack_elements(Integer, pack::to_int, pack_utf8_element)
+#define pack_utf8_element(v)          pack19::utf8_encode(state, str, v)
+#define pack_utf8                     pack_elements(Integer, pack19::to_int, pack_utf8_element)
 
 // Pack BER-compressed integers
-#define pack_ber_element(v)           pack::ber_encode(state, str, v)
-#define pack_ber                      pack_elements(Integer, pack::to_int, pack_ber_element)
+#define pack_ber_element(v)           pack19::ber_encode(state, str, v)
+#define pack_ber                      pack_elements(Integer, pack19::to_int, pack_ber_element)
 
 // Wraps the logic for iterating over a number of elements,
 // coercing them to the correct class and formatting them
@@ -517,68 +550,68 @@ namespace rubinius {
 // Macros that depend on endianness
 #ifdef RBX_LITTLE_ENDIAN
 
-# define pack_double_element_le(v)  (pack::double_element(str, (v)->val))
-# define pack_double_element_be(v)  (pack::swap_double(str, (v)->val))
+# define pack_double_element_le(v)  (pack19::double_element(str, (v)->val))
+# define pack_double_element_be(v)  (pack19::swap_double(str, (v)->val))
 # define pack_double                pack_double_le
 
-# define pack_float_element_le(v)   (pack::float_element(str, (v)->val))
-# define pack_float_element_be(v)   (pack::swap_float(str, (v)->val))
+# define pack_float_element_le(v)   (pack19::float_element(str, (v)->val))
+# define pack_float_element_be(v)   (pack19::swap_float(str, (v)->val))
 # define pack_float                 pack_float_le
 
-# define pack_short_element_le(v)   (pack::short_element(str, pack::check_long(state, v)))
-# define pack_short_element_be(v)   (pack::short_element(str, \
-                                        pack::swap_2bytes(pack::check_long(state, v))))
+# define pack_short_element_le(v)   (pack19::short_element(str, pack19::check_long(state, v)))
+# define pack_short_element_be(v)   (pack19::short_element(str, \
+                                        pack19::swap_2bytes(pack19::check_long(state, v))))
 # define pack_short                 pack_short_le
 
-# define pack_int_element_le(v)     (pack::int_element(str, pack::check_long(state, v)))
-# define pack_int_element_be(v)     (pack::int_element(str, \
-                                        pack::swap_4bytes(pack::check_long(state, v))))
+# define pack_int_element_le(v)     (pack19::int_element(str, pack19::check_long(state, v)))
+# define pack_int_element_be(v)     (pack19::int_element(str, \
+                                        pack19::swap_4bytes(pack19::check_long(state, v))))
 # define pack_int                   pack_int_le
 
-# define pack_long_element_le(v)    (pack::long_element(str, pack::check_long_long(state, v)))
-# define pack_long_element_be(v)    (pack::long_element(str, \
-                                        pack::swap_8bytes(pack::check_long_long(state, v))))
+# define pack_long_element_le(v)    (pack19::long_element(str, pack19::check_long_long(state, v)))
+# define pack_long_element_be(v)    (pack19::long_element(str, \
+                                        pack19::swap_8bytes(pack19::check_long_long(state, v))))
 # define pack_long                  pack_long_le
 
 #else // Big endian
 
-# define pack_double_element_le(v)  (pack::swap_double(str, (v)->val))
-# define pack_double_element_be(v)  (pack::double_element(str, (v)->val))
+# define pack_double_element_le(v)  (pack19::swap_double(str, (v)->val))
+# define pack_double_element_be(v)  (pack19::double_element(str, (v)->val))
 # define pack_double                pack_double_be
 
-# define pack_float_element_le(v)   (pack::swap_float(str, (v)->val))
-# define pack_float_element_be(v)   (pack::float_element(str, (v)->val))
+# define pack_float_element_le(v)   (pack19::swap_float(str, (v)->val))
+# define pack_float_element_be(v)   (pack19::float_element(str, (v)->val))
 # define pack_float                 pack_float_be
 
-# define pack_short_element_le(v)   (pack::short_element(str, \
-                                        pack::swap_2bytes(pack::check_long(state, v))))
-# define pack_short_element_be(v)   (pack::short_element(str, pack::check_long(state, v)))
+# define pack_short_element_le(v)   (pack19::short_element(str, \
+                                        pack19::swap_2bytes(pack19::check_long(state, v))))
+# define pack_short_element_be(v)   (pack19::short_element(str, pack19::check_long(state, v)))
 # define pack_short                 pack_short_be
 
-# define pack_int_element_le(v)     (pack::int_element(str, \
-                                        pack::swap_4bytes(pack::check_long(state, v))))
-# define pack_int_element_be(v)     (pack::int_element(str, pack::check_long(state, v)))
+# define pack_int_element_le(v)     (pack19::int_element(str, \
+                                        pack19::swap_4bytes(pack19::check_long(state, v))))
+# define pack_int_element_be(v)     (pack19::int_element(str, pack19::check_long(state, v)))
 # define pack_int                   pack_int_be
 
-# define pack_long_element_le(v)    (pack::long_element(str, \
-                                        pack::swap_8bytes(pack::check_long_long(state, v))))
-# define pack_long_element_be(v)    (pack::long_element(str, pack::check_long_long(state, v)))
+# define pack_long_element_le(v)    (pack19::long_element(str, \
+                                        pack19::swap_8bytes(pack19::check_long_long(state, v))))
+# define pack_long_element_be(v)    (pack19::long_element(str, pack19::check_long_long(state, v)))
 # define pack_long                  pack_long_be
 
 #endif
 
 
-  String* Array::pack(STATE, String* directives, CallFrame* call_frame) {
+  String* Array::pack19(STATE, String* directives, CallFrame* call_frame) {
     // Ragel-specific variables
-    std::string d(directives->c_str(), directives->size());
-    const char *p  = d.c_str();
-    const char *pe = p + d.size();
+    const char* p;
+    const char* pe;
+    ByteArray* d = pack19::prepare_directives(state, directives, &p, &pe);
     const char *eof = pe;
     int cs;
 
     // pack-specific variables
     Array* self = this;
-    OnStack<1> sv(state, self);
+    OnStack<2> sv(state, self, d);
 
     native_int array_size = self->size();
     native_int index = 0;
