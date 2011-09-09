@@ -47,6 +47,9 @@
   a = ('a' modifier) %bytes %string_width %remainder %string_size %a;
   Z = ('Z' modifier) %bytes %string_width %remainder %string_size %Z;
 
+  # Others
+  P = ('P' modifier) %platform_width %set_stop %P %extra;
+
   # Encodings
   B = ('B' modifier) %bytes %bit_width %remainder %string_size %B %index_increment;
   b = ('b' modifier) %bytes %bit_width %remainder %string_size %b %index_increment;
@@ -63,8 +66,9 @@
   encodings = B | b | H | h | M | m | U | u | w;
   strings   = A | a | Z;
   moves     = X | x | at;
+  others    = P;
 
-  directives = integers | strings | encodings | moves | floats;
+  directives = integers | strings | encodings | moves | floats | others;
 
   main := (directives >start)* %done;
 

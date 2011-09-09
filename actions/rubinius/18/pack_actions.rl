@@ -164,6 +164,16 @@
     }
   }
 
+  # Others
+
+  action P {
+#if RBX_SIZEOF_LONG == 4
+    str.append("\0\0\0\0", 4);
+#else
+    str.append("\0\0\0\0\0\0\0\0", 8);
+#endif
+  }
+
   # Encodings
 
   action B {

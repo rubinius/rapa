@@ -285,6 +285,15 @@
     }
   }
 
+  # Others
+
+  action P {
+    for(; index < stop; index += RBX_SIZEOF_LONG) {
+      array->append(state, Qnil);
+      if(count > 0) count--;
+    }
+  }
+
   # Encodings
 
   action index_increment {
