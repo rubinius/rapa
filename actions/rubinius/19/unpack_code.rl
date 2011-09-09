@@ -486,6 +486,11 @@ namespace rubinius {
         switch(d[i]) {
         case 0:
         case ' ':
+        case '\t':
+        case '\n':
+        case '\v':
+        case '\f':
+        case '\r':
           i++;
           break;
         case '#':
