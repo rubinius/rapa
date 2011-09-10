@@ -137,6 +137,7 @@
 
   action string_append {
     if(RTEST(string_value->tainted_p(state))) tainted = true;
+    if(RTEST(string_value->untrusted_p(state))) untrusted = true;
     native_int size = string_value->size();
     if(rest) count = size;
     if(count <= size) {
@@ -210,6 +211,7 @@
   }
 
   action b64_uu_size {
+    count_flag = count;
     if(rest || count < 3) {
       count = 45;
     } else {
@@ -218,7 +220,7 @@
   }
 
   action m {
-    pack19::b64_uu_encode(string_value, str, count, pack19::b64_table, '=', false);
+    pack19::b64_uu_encode(string_value, str, count, count_flag, pack19::b64_table, '=', false);
   }
 
   action U {
@@ -226,7 +228,7 @@
   }
 
   action u {
-    pack19::b64_uu_encode(string_value, str, count, pack19::uu_table, '`', true);
+    pack19::b64_uu_encode(string_value, str, count, count_flag, pack19::uu_table, '`', true);
   }
 
   action w {
@@ -276,6 +278,10 @@
     if(tainted) {
       result->taint(state);
       tainted = false;
+    }
+    if(untrusted) {
+      result->untrust(state);
+      untrusted = false;
     }
     return result;
   }

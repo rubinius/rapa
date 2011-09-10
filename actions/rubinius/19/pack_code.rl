@@ -224,8 +224,9 @@ namespace rubinius {
 #define b64_uu_byte3(t, b, c)   t[077 & (((b[1] << 2) & 074) | ((c >> 6) & 03))];
 #define b64_uu_byte4(t, b)      t[077 & b[2]];
 
-    void b64_uu_encode(String* s, std::string& str, native_int count,
-                              const char* table, int padding, bool encode_size)
+    void b64_uu_encode(String* s, std::string& str,
+                       native_int count, native_int count_flag,
+                       const char* table, int padding, bool encode_size)
     {
       char *buf = ALLOCA_N(char, count * 4 / 3 + 6);
       native_int i, chars, line, total = s->size();
@@ -256,7 +257,9 @@ namespace rubinius {
         }
 
         b += chars;
-        buf[i++] = '\n';
+        if(encode_size || (!encode_size && count_flag > 0)) {
+          buf[i++] = '\n';
+        }
         str.append(buf, i);
       }
     }
@@ -621,10 +624,12 @@ namespace rubinius {
     native_int array_size = self->size();
     native_int index = 0;
     native_int count = 0;
+    native_int count_flag = -1;
     native_int stop = 0;
     bool rest = false;
     bool platform = false;
     bool tainted = false;
+    bool untrusted = false;
 
     String* string_value = 0;
     std::string str("");
@@ -633,6 +638,7 @@ namespace rubinius {
     str.reserve(array_size * 4);
 
     if(RTEST(directives->tainted_p(state))) tainted = true;
+    if(RTEST(directives->untrusted_p(state))) untrusted = true;
 %%{
 
   machine pack;
