@@ -48,7 +48,7 @@
   Z = ('Z' modifier) %bytes %string_width %remainder %string_size %Z;
 
   # Others
-  P = ('P' modifier) %platform_width %set_stop %P %extra;
+  P = (('P' | 'p') modifier) %platform_width %set_stop %P %extra;
 
   # Encodings
   B = ('B' modifier) %bytes %bit_width %remainder %string_size %B %index_increment;

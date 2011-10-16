@@ -43,7 +43,7 @@
   Z = ('Z' modifier) %string_check_size %to_str_nil %string_append %Z;
 
   # Others
-  P = ('P' modifier) %check_size %P;
+  P = (('P' | 'p') modifier) %check_size %P;
 
   # Encodings
   B = ('B' modifier) %string_check_size %to_str_nil %B;
