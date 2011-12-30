@@ -18,6 +18,7 @@
 
 #include "builtin/array.hpp"
 #include "builtin/bytearray.hpp"
+#include "builtin/encoding.hpp"
 #include "builtin/exception.hpp"
 #include "builtin/float.hpp"
 #include "builtin/module.hpp"
@@ -630,6 +631,9 @@ namespace rubinius {
     bool platform = false;
     bool tainted = false;
     bool untrusted = false;
+    bool ascii_encoding = false;
+    bool utf8_encoding = false;
+    bool string_encoding = false;
 
     String* string_value = 0;
     std::string str("");

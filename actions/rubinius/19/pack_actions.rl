@@ -150,14 +150,17 @@
   }
 
   action A {
+    string_encoding = true;
     if(count > 0) str.append(count, ' ');
   }
 
   action a {
+    string_encoding = true;
     if(count > 0) str.append(count, '\0');
   }
 
   action Z {
+    string_encoding = true;
     if(rest) {
       if(count == 0) str.append(1, '\0');
     } else {
@@ -206,6 +209,7 @@
   }
 
   action M {
+    ascii_encoding = true;
     if(rest || count < 2) count = 72;
     pack19::quotable_printable(string_value, str, count);
   }
@@ -220,14 +224,17 @@
   }
 
   action m {
+    ascii_encoding = true;
     pack19::b64_uu_encode(string_value, str, count, count_flag, pack19::b64_table, '=', false);
   }
 
   action U {
+    utf8_encoding = true;
     pack_utf8
   }
 
   action u {
+    ascii_encoding = true;
     pack19::b64_uu_encode(string_value, str, count, count_flag, pack19::uu_table, '`', true);
   }
 
@@ -275,14 +282,27 @@
 
   action done {
     String* result = String::create(state, str.c_str(), str.size());
+
+    if(str.size() > 0) {
+      if(utf8_encoding) {
+        result->encoding(state, Encoding::utf8_encoding(state));
+      } else if(string_encoding) {
+        // TODO
+      } else if(!ascii_encoding) {
+        result->encoding(state, Encoding::ascii8bit_encoding(state));
+      }
+    }
+
     if(tainted) {
       result->taint(state);
       tainted = false;
     }
+
     if(untrusted) {
       result->untrust(state);
       untrusted = false;
     }
+
     return result;
   }
 }%%
