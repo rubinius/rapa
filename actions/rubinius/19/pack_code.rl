@@ -641,8 +641,8 @@ namespace rubinius {
     // Use information we have to reduce repeated allocation.
     str.reserve(array_size * 4);
 
-    if(RTEST(directives->tainted_p(state))) tainted = true;
-    if(RTEST(directives->untrusted_p(state))) untrusted = true;
+    if(CBOOL(directives->tainted_p(state))) tainted = true;
+    if(CBOOL(directives->untrusted_p(state))) untrusted = true;
 %%{
 
   machine pack;

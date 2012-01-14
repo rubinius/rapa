@@ -136,8 +136,8 @@
   }
 
   action string_append {
-    if(RTEST(string_value->tainted_p(state))) tainted = true;
-    if(RTEST(string_value->untrusted_p(state))) untrusted = true;
+    if(CBOOL(string_value->tainted_p(state))) tainted = true;
+    if(CBOOL(string_value->untrusted_p(state))) untrusted = true;
     native_int size = string_value->byte_size();
     if(rest) count = size;
     if(count <= size) {
