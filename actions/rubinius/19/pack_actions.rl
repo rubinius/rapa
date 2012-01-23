@@ -8,6 +8,7 @@
     count = 1;
     rest = false;
     platform = false;
+    byte_order = 0;
   }
 
   action start_digit {
@@ -24,6 +25,14 @@
 
   action platform {
     platform = true;
+  }
+
+  action big_endian {
+    byte_order = 1;
+  }
+
+  action little_endian {
+    byte_order = 2;
   }
 
   action check_size {
@@ -46,22 +55,57 @@
   }
 
   action S {
-    pack_short;
+    switch (byte_order) {
+    case 1:
+      pack_short_be;
+    case 2:
+      pack_short_le;
+    default:
+      pack_short;
+    }
   }
 
   action I {
-    pack_int;
+    switch (byte_order) {
+    case 1:
+      pack_int_be;
+    case 2:
+      pack_int_le;
+    default:
+      pack_int;
+    }
   }
 
   action L {
     if(platform) {
 #if RBX_SIZEOF_LONG == 4
-      pack_int;
+      switch (byte_order) {
+      case 1:
+        pack_int_be;
+      case 2:
+        pack_int_le;
+      default:
+        pack_int;
+      }
 #else
-      pack_long;
+      switch (byte_order) {
+      case 1:
+        pack_long_be;
+      case 2:
+        pack_long_le;
+      default:
+        pack_long;
+      }
 #endif
     } else {
-      pack_int;
+      switch (byte_order) {
+      case 1:
+        pack_int_be;
+      case 2:
+        pack_int_le;
+      default:
+        pack_int;
+      }
     }
   }
 
@@ -82,7 +126,14 @@
   }
 
   action Q {
-    pack_long;
+      switch (byte_order) {
+      case 1:
+        pack_long_be;
+      case 2:
+        pack_long_le;
+      default:
+        pack_long;
+      }
   }
 
   # Moves
@@ -277,6 +328,12 @@
   action non_native_error {
     std::ostringstream msg;
     msg << "'" << *p << "' allowed only after types sSiIlL";
+    Exception::argument_error(state, msg.str().c_str());
+  }
+
+  action byte_order_error {
+    std::ostringstream msg;
+    msg << "'" << *p << "' allowed only after types sSiIlLqQ";
     Exception::argument_error(state, msg.str().c_str());
   }
 

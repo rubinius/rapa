@@ -627,6 +627,7 @@ namespace rubinius {
     native_int count = 0;
     native_int count_flag = -1;
     native_int stop = 0;
+    native_int byte_order = 0; // 0: platform byte order; 1: big-endian, 2: little-endian
     bool rest = false;
     bool platform = false;
     bool tainted = false;

@@ -618,6 +618,7 @@ namespace rubinius {
     native_int remainder = 0;
     bool rest = false;
     bool platform = false;
+    native_int byte_order = 0; // 0: platform byte order; 1: big-endian, 2: little-endian
 
 %%{
   machine unpack;

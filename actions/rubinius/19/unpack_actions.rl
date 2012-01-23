@@ -8,6 +8,7 @@
     count = 1;
     rest = false;
     platform = false;
+    byte_order = 0;
   }
 
   action start_digit {
@@ -29,6 +30,14 @@
 
   action platform {
     platform = true;
+  }
+
+  action big_endian {
+    byte_order = 1;
+  }
+
+  action little_endian {
+    byte_order = 2;
   }
 
   action byte_width {
@@ -86,42 +95,112 @@
   }
 
   action S {
-    unpack_integer(u2bytes);
+    switch (byte_order) {
+    case 1:
+      unpack_integer(u2bytes_be);
+    case 2:
+      unpack_integer(u2bytes_le);
+    default:
+      unpack_integer(u2bytes);
+    }
   }
 
   action s {
-    unpack_integer(s2bytes);
+    switch (byte_order) {
+    case 1:
+      unpack_integer(s2bytes_be);
+    case 2:
+      unpack_integer(s2bytes_le);
+    default:
+      unpack_integer(s2bytes);
+    }
   }
 
   action I {
-    unpack_integer(u4bytes);
+    switch (byte_order) {
+    case 1:
+      unpack_integer(u4bytes_be);
+    case 2:
+      unpack_integer(u4bytes_le);
+    default:
+      unpack_integer(u4bytes);
+    }
   }
 
   action i {
-    unpack_integer(s4bytes);
+    switch (byte_order) {
+    case 1:
+      unpack_integer(s4bytes_be);
+    case 2:
+      unpack_integer(s4bytes_le);
+    default:
+      unpack_integer(s4bytes);
+    }
   }
 
   action L {
     if(platform) {
 #if RBX_SIZEOF_LONG == 4
-      unpack_integer(u4bytes);
+      switch (byte_order) {
+      case 1:
+        unpack_integer(u4bytes_be);
+      case 2:
+        unpack_integer(u4bytes_le);
+      default:
+        unpack_integer(u4bytes);
+      }
 #else
-      unpack_integer(u8bytes);
+      switch (byte_order) {
+      case 1:
+        unpack_integer(u8bytes_be);
+      case 2:
+        unpack_integer(u8bytes_le);
+      default:
+        unpack_integer(u8bytes);
+      }
 #endif
     } else {
-      unpack_integer(u4bytes);
+      switch (byte_order) {
+      case 1:
+        unpack_integer(u4bytes_be);
+      case 2:
+        unpack_integer(u4bytes_le);
+      default:
+        unpack_integer(u4bytes);
+      }
     }
   }
 
   action l {
     if(platform) {
 #if RBX_SIZEOF_LONG == 4
-      unpack_integer(s4bytes);
+      switch (byte_order) {
+      case 1:
+        unpack_integer(s4bytes_be);
+      case 2:
+        unpack_integer(s4bytes_le);
+      default:
+        unpack_integer(s4bytes);
+      }
 #else
-      unpack_integer(s8bytes);
+      switch (byte_order) {
+      case 1:
+        unpack_integer(s8bytes_be);
+      case 2:
+        unpack_integer(s8bytes_le);
+      default:
+        unpack_integer(s8bytes);
+      }
 #endif
     } else {
-      unpack_integer(s4bytes);
+      switch (byte_order) {
+      case 1:
+        unpack_integer(s4bytes_be);
+      case 2:
+        unpack_integer(s4bytes_le);
+      default:
+        unpack_integer(s4bytes);
+      }
     }
   }
 
@@ -142,11 +221,25 @@
   }
 
   action Q {
-    unpack_integer(u8bytes);
+    switch (byte_order) {
+    case 1:
+      unpack_integer(u8bytes_be);
+    case 2:
+      unpack_integer(u8bytes_le);
+    default:
+      unpack_integer(u8bytes);
+    }
   }
 
   action q {
-    unpack_integer(s8bytes);
+    switch (byte_order) {
+    case 1:
+      unpack_integer(s8bytes_be);
+    case 2:
+      unpack_integer(s8bytes_le);
+    default:
+      unpack_integer(s8bytes);
+    }
   }
 
   # Floats
@@ -342,6 +435,12 @@
   action non_native_error {
     std::ostringstream msg;
     msg << "'" << *p << "' allowed only after types sSiIlL";
+    Exception::argument_error(state, msg.str().c_str());
+  }
+
+  action byte_order_error {
+    std::ostringstream msg;
+    msg << "'" << *p << "' allowed only after types sSiIlLqQ";
     Exception::argument_error(state, msg.str().c_str());
   }
 

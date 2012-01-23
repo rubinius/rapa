@@ -9,8 +9,10 @@
   count = digit >start_digit digit* @count;
 
   count_modifier    = '*' %rest | count?;
-  modifier          = count_modifier | [_!] @non_native_error;
-  platform_modifier = ([_!] %platform)? count_modifier;
+  modifier          = count_modifier | [_!] @non_native_error | [<>] @byte_order_error;
+  byte_order        = '>' %big_endian | '<' %little_endian;
+  platform_modifier = ([_!] %platform)? (byte_order)? count_modifier;
+  byte_order_modifier = (byte_order)? count_modifier | [_!] @non_native_error;
 
   # Integers
   S = ('S' platform_modifier) %short_width %set_stop %S %extra;
@@ -26,8 +28,8 @@
   n = ('n' modifier) %short_width %set_stop %n %extra;
   V = ('V' modifier) %int_width %set_stop %V %extra;
   v = ('v' modifier) %short_width %set_stop %v %extra;
-  Q = ('Q' modifier) %long_width %set_stop %Q %extra;
-  q = ('q' modifier) %long_width %set_stop %q %extra;
+  Q = ('Q' byte_order_modifier) %long_width %set_stop %Q %extra;
+  q = ('q' byte_order_modifier) %long_width %set_stop %q %extra;
 
   # Floats
   D = (('D' | 'd') modifier) %long_width %set_stop %D %extra;
