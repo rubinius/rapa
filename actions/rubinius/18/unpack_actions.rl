@@ -71,7 +71,7 @@
 
   action extra {
     for(; count > 0; count--) {
-      array->append(state, Qnil);
+      array->append(state, cNil);
     }
   }
 
@@ -289,7 +289,7 @@
 
   action P {
     for(; index < stop; index += RBX_SIZEOF_LONG) {
-      array->append(state, Qnil);
+      array->append(state, cNil);
       if(count > 0) count--;
     }
   }
