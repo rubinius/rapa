@@ -8,17 +8,55 @@
 
   count = digit >start_digit digit* @count;
 
-  count_modifier    = '*' %rest | count?;
-  modifier          = count_modifier | [_!] @non_native_error;
-  platform_modifier = ([_!] %platform)? count_modifier;
+  platform      = [_!];
+  little_endian = '<';
+  big_endian    = '>';
+
+  count_modifier        = '*' %rest | count?;
+  modifier              = count_modifier | [_!] @non_native_error;
+  platform_le_modifier  = (platform little_endian) | (little_endian platform);
+  platform_be_modifier  = (platform big_endian) | (big_endian platform);
+  le_modifier           = little_endian | platform_le_modifier;
+  be_modifier           = big_endian | platform_be_modifier;
 
   # Integers
-  S = ('S' platform_modifier) %short_width %set_stop %S %extra;
-  s = ('s' platform_modifier) %short_width %set_stop %s %extra;
-  I = ('I' platform_modifier) %int_width %set_stop %I %extra;
-  i = ('i' platform_modifier) %int_width %set_stop %i %extra;
-  L = ('L' platform_modifier) %platform_width %set_stop %L %extra;
-  l = ('l' platform_modifier) %platform_width %set_stop %l %extra;
+  S   = ('S' platform? count_modifier) %short_width %set_stop %S %extra;
+  Sl  = ('S' le_modifier count_modifier) %short_width %set_stop %Sl %extra;
+  Sb  = ('S' be_modifier count_modifier) %short_width %set_stop %Sb %extra;
+
+  s   = ('s' platform? count_modifier) %short_width %set_stop %s %extra;
+  sl  = ('s' le_modifier count_modifier) %short_width %set_stop %sl %extra;
+  sb  = ('s' be_modifier count_modifier) %short_width %set_stop %sb %extra;
+
+  I   = ('I' platform? count_modifier) %int_width %set_stop %I %extra;
+  Il  = ('I' le_modifier count_modifier) %int_width %set_stop %Il %extra;
+  Ib  = ('I' be_modifier count_modifier) %int_width %set_stop %Ib %extra;
+
+  i   = ('i' platform? count_modifier) %int_width %set_stop %i %extra;
+  il  = ('i' le_modifier count_modifier) %int_width %set_stop %il %extra;
+  ib  = ('i' be_modifier count_modifier) %int_width %set_stop %ib %extra;
+
+  L   = ('L' count_modifier) %int_width %set_stop %L %extra;
+  Lp  = ('L' platform count_modifier) %platform_width %set_stop %Lp %extra;
+  Ll  = ('L' little_endian count_modifier) %int_width %set_stop %Ll %extra;
+  Lb  = ('L' big_endian count_modifier) %int_width %set_stop %Lb %extra;
+  Lpl = ('L' platform_le_modifier count_modifier) %platform_width %set_stop %Lpl %extra;
+  Lpb = ('L' platform_be_modifier count_modifier) %platform_width %set_stop %Lpb %extra;
+
+  l   = ('l' count_modifier) %int_width %set_stop %l %extra;
+  lp  = ('l' platform count_modifier) %platform_width %set_stop %lp %extra;
+  ll  = ('l' little_endian count_modifier) %int_width %set_stop %ll %extra;
+  lb  = ('l' big_endian count_modifier) %int_width %set_stop %lb %extra;
+  lpl = ('l' platform_le_modifier count_modifier) %platform_width %set_stop %lpl %extra;
+  lpb = ('l' platform_be_modifier count_modifier) %platform_width %set_stop %lpb %extra;
+
+  Q   = ('Q' modifier) %long_width %set_stop %Q %extra;
+  Ql  = ('Q' little_endian modifier) %long_width %set_stop %Ql %extra;
+  Qb  = ('Q' big_endian modifier) %long_width %set_stop %Qb %extra;
+
+  q   = ('q' modifier) %long_width %set_stop %q %extra;
+  ql  = ('q' little_endian modifier) %long_width %set_stop %ql %extra;
+  qb  = ('q' big_endian modifier) %long_width %set_stop %qb %extra;
 
   C = ('C' modifier) %byte_width %set_stop %C %extra;
   c = ('c' modifier) %byte_width %set_stop %c %extra;
@@ -26,8 +64,6 @@
   n = ('n' modifier) %short_width %set_stop %n %extra;
   V = ('V' modifier) %int_width %set_stop %V %extra;
   v = ('v' modifier) %short_width %set_stop %v %extra;
-  Q = ('Q' modifier) %long_width %set_stop %Q %extra;
-  q = ('q' modifier) %long_width %set_stop %q %extra;
 
   # Floats
   D = (('D' | 'd') modifier) %long_width %set_stop %D %extra;
@@ -61,7 +97,16 @@
   u = ('u' modifier) %bytes %bytes_end %remainder %u %index_increment;
   w = ('w' modifier) %bytes %bytes_end %remainder %rest_count %w;
 
-  integers  = C | c | S | s | I | i | L | l | N | n | V | v | Q | q;
+  Ss = S | Sl | Sb;
+  ss = s | sl | sb;
+  Is = I | Il | Ib;
+  is = i | il | ib;
+  Ls = L | Lp | Ll | Lb | Lpl | Lpb;
+  ls = l | lp | ll | lb | lpl | lpb;
+  Qs = Q | Ql | Qb;
+  qs = q | ql | qb;
+
+  integers  = C | c | Ss | ss | Is | is | Ls | ls | N | n | V | v | Qs | qs;
   floats    = D | E | e | F | G | g;
   encodings = B | b | H | h | M | m | U | u | w;
   strings   = A | a | Z;

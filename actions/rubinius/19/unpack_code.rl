@@ -617,7 +617,6 @@ namespace rubinius {
     native_int count = 0;
     native_int remainder = 0;
     bool rest = false;
-    bool platform = false;
 
 %%{
   machine unpack;

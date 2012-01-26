@@ -7,7 +7,6 @@
   action start {
     count = 1;
     rest = false;
-    platform = false;
   }
 
   action start_digit {
@@ -27,10 +26,6 @@
     count = 0;
   }
 
-  action platform {
-    platform = true;
-  }
-
   action byte_width {
     width = 1;
   }
@@ -48,15 +43,11 @@
   }
 
   action platform_width {
-    if(platform) {
 #if RBX_SIZEOF_LONG == 4
-      width = 4;
+    width = 4;
 #else
-      width = 8;
+    width = 8;
 #endif
-    } else {
-      width = 4;
-    }
   }
 
   action set_stop {
@@ -89,40 +80,120 @@
     unpack_integer(u2bytes);
   }
 
+  action Sl {
+    unpack_integer(u2bytes_le);
+  }
+
+  action Sb {
+    unpack_integer(u2bytes_be);
+  }
+
   action s {
     unpack_integer(s2bytes);
+  }
+
+  action sl {
+    unpack_integer(s2bytes_le);
+  }
+
+  action sb {
+    unpack_integer(s2bytes_be);
   }
 
   action I {
     unpack_integer(u4bytes);
   }
 
+  action Il {
+    unpack_integer(u4bytes_le);
+  }
+
+  action Ib {
+    unpack_integer(u4bytes_be);
+  }
+
   action i {
     unpack_integer(s4bytes);
   }
 
+  action il {
+    unpack_integer(s4bytes_le);
+  }
+
+  action ib {
+    unpack_integer(s4bytes_be);
+  }
+
   action L {
-    if(platform) {
+    unpack_integer(u4bytes);
+  }
+
+  action Lp {
 #if RBX_SIZEOF_LONG == 4
-      unpack_integer(u4bytes);
+    unpack_integer(u4bytes);
 #else
-      unpack_integer(u8bytes);
+    unpack_integer(u8bytes);
 #endif
-    } else {
-      unpack_integer(u4bytes);
-    }
+  }
+
+  action Ll {
+    unpack_integer(u4bytes_le);
+  }
+
+  action Lb {
+    unpack_integer(u4bytes_be);
+  }
+
+  action Lpl {
+#if RBX_SIZEOF_LONG == 4
+    unpack_integer(u4bytes_le);
+#else
+    unpack_integer(u8bytes_le);
+#endif
+  }
+
+  action Lpb {
+#if RBX_SIZEOF_LONG == 4
+    unpack_integer(u4bytes_be);
+#else
+    unpack_integer(u8bytes_be);
+#endif
   }
 
   action l {
-    if(platform) {
+    unpack_integer(s4bytes);
+  }
+
+  action lp {
 #if RBX_SIZEOF_LONG == 4
-      unpack_integer(s4bytes);
+    unpack_integer(s4bytes);
 #else
-      unpack_integer(s8bytes);
+    unpack_integer(s8bytes);
 #endif
-    } else {
-      unpack_integer(s4bytes);
-    }
+  }
+
+  action ll {
+    unpack_integer(s4bytes_le);
+  }
+
+  action lb {
+    unpack_integer(s4bytes_be);
+  }
+
+  action lpl {
+#if RBX_SIZEOF_LONG == 4
+    unpack_integer(s4bytes_le);
+#else
+    unpack_integer(s8bytes_le);
+#endif
+  }
+
+  action lpb {
+#if RBX_SIZEOF_LONG == 4
+    unpack_integer(s4bytes_be);
+#else
+    unpack_integer(s8bytes_be);
+#endif
   }
 
   action N {
@@ -145,8 +216,24 @@
     unpack_integer(u8bytes);
   }
 
+  action Ql {
+    unpack_integer(u8bytes_le);
+  }
+
+  action Qb {
+    unpack_integer(u8bytes_be);
+  }
+
   action q {
     unpack_integer(s8bytes);
+  }
+
+  action ql {
+    unpack_integer(s8bytes_le);
+  }
+
+  action qb {
+    unpack_integer(s8bytes_be);
   }
 
   # Floats
