@@ -16,23 +16,19 @@
   modifier              = count_modifier | platform @non_native_error;
   platform_le_modifier  = (platform little_endian) | (little_endian platform);
   platform_be_modifier  = (platform big_endian) | (big_endian platform);
+  le_modifier           = little_endian | platform_le_modifier;
+  be_modifier           = big_endian | platform_be_modifier;
 
   # Integers
   short = ('S' | 's');
-  S     = (short count_modifier) %check_size %S;
-  Sp    = (short platform count_modifier) %check_size %S;
-  Sl    = (short little_endian count_modifier) %check_size %Sl;
-  Sb    = (short big_endian count_modifier) %check_size %Sb;
-  Spl   = (short platform_le_modifier count_modifier) %check_size %Sl;
-  Spb   = (short platform_be_modifier count_modifier) %check_size %Sb;
+  S     = (short platform? count_modifier) %check_size %S;
+  Sl    = (short le_modifier count_modifier) %check_size %Sl;
+  Sb    = (short be_modifier count_modifier) %check_size %Sb;
 
   int   = ('I' | 'i');
-  I     = (int count_modifier) %check_size %I;
-  Ip    = (int platform count_modifier) %check_size %I;
-  Il    = (int little_endian count_modifier) %check_size %Il;
-  Ib    = (int big_endian count_modifier) %check_size %Ib;
-  Ipl   = (int platform_le_modifier count_modifier) %check_size %Il;
-  Ipb   = (int platform_be_modifier count_modifier) %check_size %Ib;
+  I     = (int platform? count_modifier) %check_size %I;
+  Il    = (int le_modifier count_modifier) %check_size %Il;
+  Ib    = (int be_modifier count_modifier) %check_size %Ib;
 
   long  = ('L' | 'l');
   L     = (long count_modifier) %check_size %L;
@@ -85,9 +81,9 @@
   u = ('u' modifier) %string_check_size %b64_uu_size %to_str %u;
   w = ('w' modifier) %check_size %w;
 
+  Ss = S | Sl | Sb;
+  Is = I | Il | Ib;
   Ls = L | Lp | Ll | Lb | Lpl | Lpb;
-  Ss = S | Sp | Sl | Sb | Spl | Spb;
-  Is = I | Ip | Il | Ib | Ipl | Ipb;
   Qs = Q | Ql | Qb;
 
   integers  = C | Ss | Is | Ls | n | N | v | V | Qs;
