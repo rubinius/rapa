@@ -8,21 +8,50 @@
 
   count = digit >start_digit digit* @count;
 
-  count_modifier    = '*' %rest | count?;
-  platform_modifier = ([_!] %platform)? count_modifier;
-  modifier          = count_modifier | [_!] @non_native_error;
+  platform      = [_!];
+  little_endian = '<';
+  big_endian    = '>';
+
+  count_modifier        = '*' %rest | count?;
+  modifier              = count_modifier | platform @non_native_error;
+  platform_le_modifier  = (platform little_endian) | (little_endian platform);
+  platform_be_modifier  = (platform big_endian) | (big_endian platform);
 
   # Integers
-  S = (('S' | 's') platform_modifier) %check_size %S;
-  I = (('I' | 'i') platform_modifier) %check_size %I;
-  L = (('L' | 'l') platform_modifier) %check_size %L;
+  short = ('S' | 's');
+  S     = (short count_modifier) %check_size %S;
+  Sp    = (short platform count_modifier) %check_size %S;
+  Sl    = (short little_endian count_modifier) %check_size %Sl;
+  Sb    = (short big_endian count_modifier) %check_size %Sb;
+  Spl   = (short platform_le_modifier count_modifier) %check_size %Sl;
+  Spb   = (short platform_be_modifier count_modifier) %check_size %Sb;
+
+  int   = ('I' | 'i');
+  I     = (int count_modifier) %check_size %I;
+  Ip    = (int platform count_modifier) %check_size %I;
+  Il    = (int little_endian count_modifier) %check_size %Il;
+  Ib    = (int big_endian count_modifier) %check_size %Ib;
+  Ipl   = (int platform_le_modifier count_modifier) %check_size %Il;
+  Ipb   = (int platform_be_modifier count_modifier) %check_size %Ib;
+
+  long  = ('L' | 'l');
+  L     = (long count_modifier) %check_size %L;
+  Lp    = (long platform count_modifier) %check_size %Lp;
+  Ll    = (long little_endian count_modifier) %check_size %Ll;
+  Lb    = (long big_endian count_modifier) %check_size %Lb;
+  Lpl   = (long platform_le_modifier count_modifier) %check_size %Lpl;
+  Lpb   = (long platform_be_modifier count_modifier) %check_size %Lpb;
+
+  int64 = ('Q' | 'q');
+  Q     = (int64 modifier) %check_size %Q;
+  Ql    = (int64 little_endian modifier) %check_size %Ql;
+  Qb    = (int64 big_endian modifier) %check_size %Qb;
 
   C = (('C' | 'c') modifier) %check_size %C;
   n = ('n'         modifier) %check_size %n;
   N = ('N'         modifier) %check_size %N;
   v = ('v'         modifier) %check_size %v;
   V = ('V'         modifier) %check_size %V;
-  Q = (('Q' | 'q') modifier) %check_size %Q;
 
   # Floats
   D = (('D' | 'd') modifier) %check_size %D;
@@ -56,7 +85,12 @@
   u = ('u' modifier) %string_check_size %b64_uu_size %to_str %u;
   w = ('w' modifier) %check_size %w;
 
-  integers  = C | S | I | L | n | N | v | V | Q;
+  Ls = L | Lp | Ll | Lb | Lpl | Lpb;
+  Ss = S | Sp | Sl | Sb | Spl | Spb;
+  Is = I | Ip | Il | Ib | Ipl | Ipb;
+  Qs = Q | Ql | Qb;
+
+  integers  = C | Ss | Is | Ls | n | N | v | V | Qs;
   floats    = D | E | e | F | G | g;
   encodings = B | b | H | h | M | m | U | u | w;
   strings   = A | a | Z;

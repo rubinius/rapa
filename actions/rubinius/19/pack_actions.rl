@@ -7,7 +7,6 @@
   action start {
     count = 1;
     rest = false;
-    platform = false;
   }
 
   action start_digit {
@@ -20,10 +19,6 @@
 
   action rest {
     rest = true;
-  }
-
-  action platform {
-    platform = true;
   }
 
   action check_size {
@@ -49,20 +44,60 @@
     pack_short;
   }
 
+  action Sl {
+    pack_short_le;
+  }
+
+  action Sb {
+    pack_short_be;
+  }
+
   action I {
     pack_int;
   }
 
+  action Il {
+    pack_int_le;
+  }
+
+  action Ib {
+    pack_int_be;
+  }
+
   action L {
-    if(platform) {
+    pack_int;
+  }
+
+  action Lp {
 #if RBX_SIZEOF_LONG == 4
-      pack_int;
+    pack_int;
 #else
-      pack_long;
+    pack_long;
 #endif
-    } else {
-      pack_int;
-    }
+  }
+
+  action Ll {
+    pack_int_le;
+  }
+
+  action Lb {
+    pack_int_be;
+  }
+
+  action Lpl {
+#if RBX_SIZEOF_LONG == 4
+    pack_int_le;
+#else
+    pack_long_le;
+#endif
+  }
+
+  action Lpb {
+#if RBX_SIZEOF_LONG == 4
+    pack_int_be;
+#else
+    pack_long_be;
+#endif
   }
 
   action n {
@@ -83,6 +118,14 @@
 
   action Q {
     pack_long;
+  }
+
+  action Ql {
+    pack_long_le;
+  }
+
+  action Qb {
+    pack_long_be;
   }
 
   # Moves

@@ -628,7 +628,6 @@ namespace rubinius {
     native_int count_flag = -1;
     native_int stop = 0;
     bool rest = false;
-    bool platform = false;
     bool tainted = false;
     bool untrusted = false;
     bool ascii_encoding = false;
