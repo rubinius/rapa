@@ -279,7 +279,7 @@ namespace rubinius {
       return str;
     }
 
-    static const int32_t utf8_limits[] = {
+    static const uint32_t utf8_limits[] = {
       0x0,        /* 1 */
       0x80,       /* 2 */
       0x800,      /* 3 */
@@ -299,7 +299,7 @@ namespace rubinius {
 
       for(; count > 0 && bytes < bytes_end; count--) {
         native_int remainder = bytes_end - bytes;
-        int32_t c = *bytes++ & 0xff, value = c;
+        uint32_t c = *bytes++ & 0xff, value = c;
         int n = 0;
         length = 1;
 
