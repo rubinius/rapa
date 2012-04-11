@@ -17,6 +17,7 @@
 
 #include "builtin/array.hpp"
 #include "builtin/bytearray.hpp"
+#include "builtin/encoding.hpp"
 #include "builtin/exception.hpp"
 #include "builtin/fixnum.hpp"
 #include "builtin/float.hpp"
@@ -138,7 +139,11 @@ namespace rubinius {
                           const char* bytes_end, native_int remainder)
     {
       if(remainder == 0) {
-        return String::create(state, 0, 0);
+        String* str = String::create(state, 0, 0);
+
+        str->encoding(state, Encoding::ascii8bit_encoding(state));
+
+        return str;
       }
 
       static bool initialized = false;
@@ -211,6 +216,7 @@ namespace rubinius {
       }
 
       *buf = 0;
+      str->encoding(state, Encoding::ascii8bit_encoding(state));
       str->num_bytes(state, Fixnum::from(buf - str->byte_address()));
       return str;
     }
