@@ -506,6 +506,18 @@ namespace rubinius {
 
       return ba;
     }
+
+    void exceeds_length_of_string(STATE, native_int count) {
+      std::ostringstream msg;
+      msg << "X" << count << " exceeds length of string";
+      Exception::argument_error(state, msg.str().c_str());
+    }
+
+    void non_native_error(STATE, const char c) {
+      std::ostringstream msg;
+      msg << "'" << c << "' allowed only after types sSiIlL";
+      Exception::argument_error(state, msg.str().c_str());
+    }
   }
 
 

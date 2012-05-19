@@ -91,9 +91,7 @@
     if(rest) count = 0;
 
     if(count > (native_int)str.size()) {
-      std::ostringstream msg;
-      msg << "X" << count << " exceeds length of string";
-      Exception::argument_error(state, msg.str().c_str());
+      pack18::exceeds_length_of_string(state, count);
     }
 
     str.resize(str.size() - count);
@@ -266,9 +264,7 @@
   }
 
   action non_native_error {
-    std::ostringstream msg;
-    msg << "'" << *p << "' allowed only after types sSiIlL";
-    Exception::argument_error(state, msg.str().c_str());
+    pack18::non_native_error(state, *p);
   }
 
   action done {

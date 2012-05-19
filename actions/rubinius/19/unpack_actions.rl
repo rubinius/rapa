@@ -285,9 +285,7 @@
 
   action check_bounds {
     if(index < 0 || index > bytes_size) {
-      std::ostringstream msg;
-      msg << *p << " outside of string";
-      Exception::argument_error(state, msg.str().c_str());
+      unpack19::outside_of_string(state, *p);
     }
   }
 
@@ -427,9 +425,7 @@
   }
 
   action non_native_error {
-    std::ostringstream msg;
-    msg << "'" << *p << "' allowed only after types sSiIlL";
-    Exception::argument_error(state, msg.str().c_str());
+    unpack19::non_native_error(state, *p);
   }
 
   action done {
