@@ -509,6 +509,18 @@ namespace rubinius {
 
       return ba;
     }
+
+    void outside_of_string(STATE, const char c) {
+      std::ostringstream msg;
+      msg << c << " outside of string";
+      Exception::argument_error(state, msg.str().c_str());
+    }
+
+    void non_native_error(STATE, const char c) {
+      std::ostringstream msg;
+      msg << "'" << c << "' allowed only after types sSiIlL";
+      Exception::argument_error(state, msg.str().c_str());
+    }
   }
 
 #define unpack_elements(create, bits)                     \
