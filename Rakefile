@@ -14,7 +14,7 @@ def rubinius(version)
 end
 
 def rubinius_ragel(version)
-  "ragel -C -G1 -I #{machines(version)} -I #{rubinius(version)}"
+  "ragel -C -F1 -I #{machines(version)} -I #{rubinius(version)}"
 end
 
 # The Ragel generated line info is a mess. This just strips the
