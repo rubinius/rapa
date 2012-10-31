@@ -652,6 +652,7 @@ namespace rubinius {
     // Use information we have to reduce repeated allocation.
     str.reserve(array_size * 4);
 
+    if(directives->byte_size() == 0) ascii_encoding = true;
     if(CBOOL(directives->tainted_p(state))) tainted = true;
     if(CBOOL(directives->untrusted_p(state))) untrusted = true;
 %%{

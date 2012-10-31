@@ -322,14 +322,14 @@
   action done {
     String* result = String::create(state, str.c_str(), str.size());
 
-    if(str.size() > 0) {
-      if(utf8_encoding) {
-        result->encoding(state, Encoding::utf8_encoding(state));
-      } else if(string_encoding) {
-        // TODO
-      } else if(!ascii_encoding) {
-        result->encoding(state, Encoding::ascii8bit_encoding(state));
-      }
+    if(utf8_encoding) {
+      result->encoding(state, Encoding::utf8_encoding(state));
+    } else if(string_encoding) {
+      // TODO
+    } else if(ascii_encoding) {
+      result->encoding(state, Encoding::usascii_encoding(state));
+    } else {
+      result->encoding(state, Encoding::ascii8bit_encoding(state));
     }
 
     if(tainted) {
