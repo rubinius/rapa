@@ -308,7 +308,7 @@ namespace rubinius {
       std::string buf;
 
       if(try_as<Bignum>(value)) {
-        static Fixnum* base = Fixnum::from(128);
+        Fixnum* base = Fixnum::from(128);
         while(try_as<Bignum>(value)) {
           Array* ary;
           if(value->fixnum_p()) {

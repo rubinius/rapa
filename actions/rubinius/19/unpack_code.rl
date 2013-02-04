@@ -358,12 +358,12 @@ namespace rubinius {
       }
     }
 
+    static const unsigned long ber_mask = 0xfeUL << ((sizeof(unsigned long) - 1) * 8);
     void ber_decode(STATE, Array* array,
                      const char*& bytes, const char* bytes_end,
                      native_int count, native_int& index)
     {
-      static unsigned long mask = 0xfeUL << ((sizeof(unsigned long) - 1) * 8);
-      static Fixnum* base = Fixnum::from(128);
+      Fixnum* base = Fixnum::from(128);
       unsigned long value = 0;
 
       while(count > 0 && bytes < bytes_end) {
@@ -373,7 +373,7 @@ namespace rubinius {
           array->append(state, Integer::from(state, value));
           count--;
           value = 0;
-        } else if(value & mask) {
+        } else if(value & ber_mask) {
           Integer* result = Integer::from(state, value);
 
           while(bytes < bytes_end) {
