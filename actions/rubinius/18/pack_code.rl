@@ -162,8 +162,8 @@ namespace rubinius {
 
 #define QUOTABLE_PRINTABLE_BUFSIZE 1024
 
+    static const char hex_table[] = "0123456789ABCDEF";
     void quotable_printable(String* s, std::string& str, int count) {
-      static char hex_table[] = "0123456789ABCDEF";
       char buf[QUOTABLE_PRINTABLE_BUFSIZE];
 
       uint8_t* b = s->byte_address();
