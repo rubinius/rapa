@@ -256,7 +256,7 @@
       }
       string = String::create(state, bytes, i);
     } else {
-      string = String::create(state, "");
+      string = String::create(state, 0, 0);
     }
 
     array->append(state, string);
