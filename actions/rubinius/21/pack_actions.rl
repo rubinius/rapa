@@ -134,7 +134,7 @@
     if(rest) count = 0;
 
     if(count > (native_int)str.size()) {
-      pack19::exceeds_length_of_string(state, count);
+      pack::exceeds_length_of_string(state, count);
     }
 
     str.resize(str.size() - count);
@@ -159,19 +159,19 @@
   # Strings
 
   action to_str_nil {
-    string_value = pack19::encoding_string(state, call_frame,
+    string_value = pack::encoding_string(state, call_frame,
         self->get(state, index++), "to_str_or_nil");
     if(!string_value) return 0;
   }
 
   action to_str {
-    string_value = pack19::encoding_string(state, call_frame,
+    string_value = pack::encoding_string(state, call_frame,
         self->get(state, index++), "to_str");
     if(!string_value) return 0;
   }
 
   action to_s {
-    string_value = pack19::encoding_string(state, call_frame,
+    string_value = pack::encoding_string(state, call_frame,
         self->get(state, index++), "to_s");
     if(!string_value) return 0;
   }
@@ -222,37 +222,37 @@
   # Encodings
 
   action B {
-    native_int extra = pack19::bit_extra(string_value, rest, count);
+    native_int extra = pack::bit_extra(string_value, rest, count);
 
-    pack19::bit_high(string_value, str, count);
+    pack::bit_high(string_value, str, count);
     if(extra > 0) str.append(extra, '\0');
   }
 
   action b {
-    native_int extra = pack19::bit_extra(string_value, rest, count);
+    native_int extra = pack::bit_extra(string_value, rest, count);
 
-    pack19::bit_low(string_value, str, count);
+    pack::bit_low(string_value, str, count);
     if(extra > 0) str.append(extra, '\0');
   }
 
   action H {
-    native_int extra = pack19::hex_extra(string_value, rest, count);
+    native_int extra = pack::hex_extra(string_value, rest, count);
 
-    pack19::hex_high(string_value, str, count);
+    pack::hex_high(string_value, str, count);
     if(extra > 0) str.append(extra, '\0');
   }
 
   action h {
-    native_int extra = pack19::hex_extra(string_value, rest, count);
+    native_int extra = pack::hex_extra(string_value, rest, count);
 
-    pack19::hex_low(string_value, str, count);
+    pack::hex_low(string_value, str, count);
     if(extra > 0) str.append(extra, '\0');
   }
 
   action M {
     ascii_encoding = true;
     if(rest || count < 2) count = 72;
-    pack19::quotable_printable(string_value, str, count);
+    pack::quotable_printable(string_value, str, count);
   }
 
   action b64_uu_size {
@@ -266,7 +266,7 @@
 
   action m {
     ascii_encoding = true;
-    pack19::b64_uu_encode(string_value, str, count, count_flag, pack19::b64_table, '=', false);
+    pack::b64_uu_encode(string_value, str, count, count_flag, pack::b64_table, '=', false);
   }
 
   action U {
@@ -276,7 +276,7 @@
 
   action u {
     ascii_encoding = true;
-    pack19::b64_uu_encode(string_value, str, count, count_flag, pack19::uu_table, '`', true);
+    pack::b64_uu_encode(string_value, str, count, count_flag, pack::uu_table, '`', true);
   }
 
   action w {
@@ -316,7 +316,7 @@
   }
 
   action non_native_error {
-    pack19::non_native_error(state, *p);
+    pack::non_native_error(state, *p);
   }
 
   action done {

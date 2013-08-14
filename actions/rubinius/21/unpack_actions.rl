@@ -285,7 +285,7 @@
 
   action check_bounds {
     if(index < 0 || index > bytes_size) {
-      unpack19::outside_of_string(state, *p);
+      unpack::outside_of_string(state, *p);
     }
   }
 
@@ -347,13 +347,13 @@
     }
 
     array->append(state, string);
-    unpack19::increment(index, count, bytes_size);
+    unpack::increment(index, count, bytes_size);
   }
 
   action a {
     array->append(state, String::create(state, bytes, count));
 
-    unpack19::increment(index, count, bytes_size);
+    unpack::increment(index, count, bytes_size);
   }
 
   action Z {
@@ -364,9 +364,9 @@
     array->append(state, String::create(state, bytes, c));
 
     if(rest) {
-      unpack19::increment(index, c < count ? c + 1 : count, bytes_size);
+      unpack::increment(index, c < count ? c + 1 : count, bytes_size);
     } else {
-      unpack19::increment(index, count, bytes_size);
+      unpack::increment(index, count, bytes_size);
     }
   }
 
@@ -382,50 +382,50 @@
   # Encodings
 
   action index_increment {
-    unpack19::increment(index,
+    unpack::increment(index,
                       bytes - ((const char*)self->byte_address() + index),
                       bytes_size);
   }
 
   action B {
-    array->append(state, unpack19::bit_high(state, bytes, count));
+    array->append(state, unpack::bit_high(state, bytes, count));
   }
 
   action b {
-    array->append(state, unpack19::bit_low(state, bytes, count));
+    array->append(state, unpack::bit_low(state, bytes, count));
   }
 
   action H {
-    array->append(state, unpack19::hex_high(state, bytes, count));
+    array->append(state, unpack::hex_high(state, bytes, count));
   }
 
   action h {
-    array->append(state, unpack19::hex_low(state, bytes, count));
+    array->append(state, unpack::hex_low(state, bytes, count));
   }
 
   action M {
-    array->append(state, unpack19::quotable_printable(state, bytes, bytes_end, remainder));
+    array->append(state, unpack::quotable_printable(state, bytes, bytes_end, remainder));
   }
 
   action m {
-    array->append(state, unpack19::base64_decode(state, bytes, bytes_end, remainder));
+    array->append(state, unpack::base64_decode(state, bytes, bytes_end, remainder));
   }
 
   action U {
-    unpack19::utf8_decode(state, array, bytes, bytes_end, count, index);
+    unpack::utf8_decode(state, array, bytes, bytes_end, count, index);
   }
 
   action u {
-    array->append(state, unpack19::uu_decode(state, bytes, bytes_end, remainder));
+    array->append(state, unpack::uu_decode(state, bytes, bytes_end, remainder));
   }
 
   action w {
-    unpack19::ber_decode(state, array, bytes, bytes_end, count, index);
+    unpack::ber_decode(state, array, bytes, bytes_end, count, index);
     index = bytes - (const char*)self->byte_address();
   }
 
   action non_native_error {
-    unpack19::non_native_error(state, *p);
+    unpack::non_native_error(state, *p);
   }
 
   action done {
