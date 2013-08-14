@@ -14,7 +14,7 @@ def rubinius(version)
 end
 
 def rubinius_ragel(version)
-  "ragel -C -F1 -I #{machines(version)} -I #{rubinius(version)}"
+  "ragel -C -F0 -I #{machines(version)} -I #{rubinius(version)}"
 end
 
 # The Ragel generated line info is a mess. This just strips the
@@ -34,22 +34,22 @@ namespace :build do
 
   namespace :rbx do
     task :pack do
-      ["18", "19"].each do |version|
+      ["18", "21"].each do |version|
         input  = "#{rubinius(version)}/pack_code.rl"
-        output = "#{OUT_DIR}/pack#{version}.cpp"
+        output = "#{OUT_DIR}/vm/modes/#{version}/pack.cpp"
 
         sh "#{rubinius_ragel(version)} -o #{output} #{input}"
-        remove_line_references output, "vm/builtin/pack#{version}.cpp"
+        remove_line_references output, "vm/modes/#{version}/pack.cpp"
       end
     end
 
     task :unpack do
-      ["18", "19"].each do |version|
+      ["18", "21"].each do |version|
         input  = "#{rubinius(version)}/unpack_code.rl"
-        output = "#{OUT_DIR}/unpack#{version}.cpp"
+        output = "#{OUT_DIR}/vm/modes/#{version}/unpack.cpp"
 
         sh "#{rubinius_ragel(version)} -o #{output} #{input}"
-        remove_line_references output, "vm/builtin/unpack#{version}.cpp"
+        remove_line_references output, "vm/modes/#{version}/unpack.cpp"
       end
     end
   end
