@@ -30,26 +30,30 @@ end
 
 namespace :build do
   desc "Generate Array#pack, String#unpack primitives for Rubinius"
-  task :rbx => ["rbx:pack", "rbx:unpack"]
+  task :rbx => ["rbx:21:pack", "rbx:21:unpack"]
 
   namespace :rbx do
-    task :pack do
-      ["18", "21"].each do |version|
-        input  = "#{rubinius(version)}/pack_code.rl"
-        output = "#{OUT_DIR}/vm/modes/#{version}/pack.cpp"
+    ["18", "21"].each do |version|
+      namespace version do
+        desc "Generate Array#pack #{version} primitives for Rubinius"
+        task :pack do
+          input  = "#{rubinius(version)}/pack_code.rl"
+          output = "#{OUT_DIR}/vm/builtin/pack.cpp"
 
-        sh "#{rubinius_ragel(version)} -o #{output} #{input}"
-        remove_line_references output, "vm/modes/#{version}/pack.cpp"
+          sh "#{rubinius_ragel(version)} -o #{output} #{input}"
+          remove_line_references output, "vm/builtin/pack.cpp"
+        end
       end
-    end
 
-    task :unpack do
-      ["18", "21"].each do |version|
-        input  = "#{rubinius(version)}/unpack_code.rl"
-        output = "#{OUT_DIR}/vm/modes/#{version}/unpack.cpp"
+      namespace version do
+        desc "Generate String#unpack #{version} primitives for Rubinius"
+        task :unpack do
+          input  = "#{rubinius(version)}/unpack_code.rl"
+          output = "#{OUT_DIR}/vm/builtin/unpack.cpp"
 
-        sh "#{rubinius_ragel(version)} -o #{output} #{input}"
-        remove_line_references output, "vm/modes/#{version}/unpack.cpp"
+          sh "#{rubinius_ragel(version)} -o #{output} #{input}"
+          remove_line_references output, "vm/builtin/unpack.cpp"
+        end
       end
     end
   end
