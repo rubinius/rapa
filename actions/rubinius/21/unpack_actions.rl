@@ -56,6 +56,7 @@
     }
 
     if(rest || stop > bytes_size) {
+      assert(width);
       stop = index + ((bytes_size - index) / width) * width;
     }
   }
