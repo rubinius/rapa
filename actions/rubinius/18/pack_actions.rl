@@ -135,7 +135,7 @@
 
   action string_append {
     if(CBOOL(string_value->tainted_p(state))) tainted = true;
-    native_int size = string_value->byte_size();
+    native_int size = string_value->size();
     if(rest) count = size;
     if(count <= size) {
       str.append((const char*)string_value->byte_address(), count);
