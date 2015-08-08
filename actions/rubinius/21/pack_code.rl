@@ -11,6 +11,7 @@
 
 #include "vm/config.h"
 
+#include "alloc.hpp"
 #include "vm.hpp"
 #include "state.hpp"
 #include "object_utils.hpp"
