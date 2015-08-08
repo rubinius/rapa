@@ -12,13 +12,15 @@
 #include "vm/config.h"
 
 #include "alloc.hpp"
-#include "vm.hpp"
+#include "object_memory.hpp"
 #include "object_utils.hpp"
 #include "on_stack.hpp"
-#include "object_memory.hpp"
+#include "state.hpp"
+#include "vm.hpp"
 
 #include "builtin/array.hpp"
 #include "builtin/byte_array.hpp"
+#include "builtin/class.hpp"
 #include "builtin/exception.hpp"
 #include "builtin/float.hpp"
 #include "builtin/module.hpp"
