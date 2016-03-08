@@ -5,16 +5,8 @@ else
   OUT_DIR = File.expand_path "../", __FILE__
 end
 
-def machines(version)
-  DIR + "/machines/#{version}"
-end
-
-def rubinius(version)
-  DIR + "/actions/rubinius/#{version}"
-end
-
-def rubinius_ragel(version)
-  "ragel -C -F0 -I #{machines(version)} -I #{rubinius(version)}"
+def rubinius_ragel
+  "ragel -C -F0 -I #{DIR}/machines -I #{DIR}/actions/rubinius"
 end
 
 # The Ragel generated line info is a mess. This just strips the
@@ -30,31 +22,25 @@ end
 
 namespace :build do
   desc "Generate Array#pack, String#unpack primitives for Rubinius"
-  task :rbx => ["rbx:21:pack", "rbx:21:unpack"]
+  task :rbx => ["rbx:pack", "rbx:unpack"]
 
   namespace :rbx do
-    ["18", "21"].each do |version|
-      namespace version do
-        desc "Generate Array#pack #{version} primitives for Rubinius"
-        task :pack do
-          input  = "#{rubinius(version)}/pack_code.rl"
-          output = "#{OUT_DIR}/vm/builtin/pack.cpp"
+    desc "Generate Array#pack primitives for Rubinius"
+    task :pack do
+      input  = "#{DIR}/actions/rubinius/pack_code.rl"
+      output = "#{OUT_DIR}/machine/builtin/pack.cpp"
 
-          sh "#{rubinius_ragel(version)} -o #{output} #{input}"
-          remove_line_references output, "vm/builtin/pack.cpp"
-        end
-      end
+      sh "#{rubinius_ragel} -o #{output} #{input}"
+      remove_line_references output, "machine/builtin/pack.cpp"
+    end
 
-      namespace version do
-        desc "Generate String#unpack #{version} primitives for Rubinius"
-        task :unpack do
-          input  = "#{rubinius(version)}/unpack_code.rl"
-          output = "#{OUT_DIR}/vm/builtin/unpack.cpp"
+    desc "Generate String#unpack primitives for Rubinius"
+    task :unpack do
+      input  = "#{DIR}/actions/rubinius/unpack_code.rl"
+      output = "#{OUT_DIR}/machine/builtin/unpack.cpp"
 
-          sh "#{rubinius_ragel(version)} -o #{output} #{input}"
-          remove_line_references output, "vm/builtin/unpack.cpp"
-        end
-      end
+      sh "#{rubinius_ragel} -o #{output} #{input}"
+      remove_line_references output, "machine/builtin/unpack.cpp"
     end
   end
 end

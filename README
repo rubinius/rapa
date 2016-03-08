@@ -46,7 +46,7 @@ example, to generate the files for Rubinius, run:
 This will generate pack.cpp and unpack.cpp in the root directory. To generate
 the files in a specific directory, use the DIR environment variable:
 
-  rake build:rbx DIR=/path/to/rubinius/vm/builtin
+  rake build:rbx DIR=/path/to/rubinius/machine/builtin
 
 4. Specs
 
