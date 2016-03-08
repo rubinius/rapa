@@ -34,11 +34,11 @@
 
 namespace rubinius {
   namespace pack {
-    inline Object* to_int(STATE, CallFrame* call_frame, Object* obj) {
+    inline Object* to_int(STATE, Object* obj) {
       Array* args = Array::create(state, 1);
       args->set(state, 0, obj);
 
-      return G(rubinius)->send(state, call_frame, state->symbol("pack_to_int"), args);
+      return G(rubinius)->send(state, state->symbol("pack_to_int"), args);
     }
 
 #define BITS_LONG   (RBX_SIZEOF_LONG * 8)
@@ -65,15 +65,14 @@ namespace rubinius {
       }
     }
 
-    inline Object* to_f(STATE, CallFrame* call_frame, Object* obj) {
+    inline Object* to_f(STATE, Object* obj) {
       Array* args = Array::create(state, 1);
       args->set(state, 0, obj);
 
-      return G(rubinius)->send(state, call_frame, state->symbol("pack_to_float"), args);
+      return G(rubinius)->send(state, state->symbol("pack_to_float"), args);
     }
 
-    inline String* encoding_string(STATE, CallFrame* call_frame, Object* obj,
-                                          const char* coerce_name)
+    inline String* encoding_string(STATE, Object* obj, const char* coerce_name)
     {
       String* s = try_as<String>(obj);
       if(s) return s;
@@ -83,7 +82,7 @@ namespace rubinius {
 
       std::string coerce_method("pack_");
       coerce_method += coerce_name;
-      Object* result = G(rubinius)->send(state, call_frame,
+      Object* result = G(rubinius)->send(state,
             state->symbol(coerce_method.c_str()), args);
 
       if(!result) return 0;
@@ -564,7 +563,7 @@ namespace rubinius {
     Object* item = self->get(state, index);     \
     T* value = try_as<T>(item);                 \
     if(!value) {                                \
-      item = coerce(state, call_frame, item);   \
+      item = coerce(state, item);   \
       if(!item) return 0;                       \
       value = as<T>(item);                      \
     }                                           \
@@ -625,7 +624,7 @@ namespace rubinius {
 #endif
 
 
-  String* Array::pack(STATE, String* directives, CallFrame* call_frame) {
+  String* Array::pack(STATE, String* directives) {
     // Ragel-specific variables
     const char* p;
     const char* pe;

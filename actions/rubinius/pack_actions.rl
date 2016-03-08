@@ -159,19 +159,19 @@
   # Strings
 
   action to_str_nil {
-    string_value = pack::encoding_string(state, call_frame,
+    string_value = pack::encoding_string(state,
         self->get(state, index++), "to_str_or_nil");
     if(!string_value) return 0;
   }
 
   action to_str {
-    string_value = pack::encoding_string(state, call_frame,
+    string_value = pack::encoding_string(state,
         self->get(state, index++), "to_str");
     if(!string_value) return 0;
   }
 
   action to_s {
-    string_value = pack::encoding_string(state, call_frame,
+    string_value = pack::encoding_string(state,
         self->get(state, index++), "to_s");
     if(!string_value) return 0;
   }
