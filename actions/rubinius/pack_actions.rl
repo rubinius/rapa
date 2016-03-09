@@ -24,13 +24,13 @@
   action check_size {
     stop = rest ? array_size : index + count;
     if(stop > array_size) {
-      Exception::argument_error(state, "too few arguments");
+      Exception::raise_argument_error(state, "too few arguments");
     }
   }
 
   action string_check_size {
     if(index >= array_size) {
-      Exception::argument_error(state, "too few arguments");
+      Exception::raise_argument_error(state, "too few arguments");
     }
   }
 

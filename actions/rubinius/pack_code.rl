@@ -38,7 +38,8 @@ namespace rubinius {
       Array* args = Array::create(state, 1);
       args->set(state, 0, obj);
 
-      return G(rubinius)->send(state, state->symbol("pack_to_int"), args);
+      return G(rubinius)->send(state, state->vm()->get_call_frame(),
+          state->symbol("pack_to_int"), args);
     }
 
 #define BITS_LONG   (RBX_SIZEOF_LONG * 8)
@@ -69,7 +70,8 @@ namespace rubinius {
       Array* args = Array::create(state, 1);
       args->set(state, 0, obj);
 
-      return G(rubinius)->send(state, state->symbol("pack_to_float"), args);
+      return G(rubinius)->send(state, state->vm()->get_call_frame(),
+          state->symbol("pack_to_float"), args);
     }
 
     inline String* encoding_string(STATE, Object* obj, const char* coerce_name)
@@ -82,7 +84,7 @@ namespace rubinius {
 
       std::string coerce_method("pack_");
       coerce_method += coerce_name;
-      Object* result = G(rubinius)->send(state,
+      Object* result = G(rubinius)->send(state, state->vm()->get_call_frame(),
             state->symbol(coerce_method.c_str()), args);
 
       if(!result) return 0;
@@ -153,7 +155,7 @@ namespace rubinius {
       if(value->fixnum_p()) {
         long l = as<Fixnum>(value)->to_long();
         if(l > INT32_MAX || l < INT32_MIN) {
-          Exception::range_error(state, "Fixnum value out of range of int32");
+          Exception::raise_range_error(state, "Fixnum value out of range of int32");
         }
         return l;
       } else {
@@ -298,13 +300,13 @@ namespace rubinius {
         str.push_back(((v >> 6)  & 0x3f) | 0x80);
         str.push_back((v & 0x3f) | 0x80);
       } else {
-        Exception::range_error(state, "pack('U') value out of range");
+        Exception::raise_range_error(state, "pack('U') value out of range");
       }
     }
 
     void ber_encode(STATE, std::string& str, Integer* value) {
       if(!value->positive_p()) {
-        Exception::argument_error(state, "cannot BER compress a negative number");
+        Exception::raise_argument_error(state, "cannot BER compress a negative number");
       }
 
       std::string buf;
@@ -512,13 +514,13 @@ namespace rubinius {
     void exceeds_length_of_string(STATE, native_int count) {
       std::ostringstream msg;
       msg << "X" << count << " exceeds length of string";
-      Exception::argument_error(state, msg.str().c_str());
+      Exception::raise_argument_error(state, msg.str().c_str());
     }
 
     void non_native_error(STATE, const char c) {
       std::ostringstream msg;
       msg << "'" << c << "' allowed only after types sSiIlL";
-      Exception::argument_error(state, msg.str().c_str());
+      Exception::raise_argument_error(state, msg.str().c_str());
     }
   }
 
