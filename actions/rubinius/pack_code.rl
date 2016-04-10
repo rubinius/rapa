@@ -642,7 +642,6 @@ namespace rubinius {
     native_int stop = 0;
     bool rest UNUSED = false;
     bool tainted UNUSED = false;
-    bool untrusted UNUSED = false;
     bool ascii_encoding = false;
     bool utf8_encoding = false;
     bool string_encoding = false;
@@ -655,7 +654,6 @@ namespace rubinius {
 
     if(directives->byte_size() == 0) ascii_encoding = true;
     if(CBOOL(directives->tainted_p(state))) tainted = true;
-    if(CBOOL(directives->untrusted_p(state))) untrusted = true;
 %%{
 
   machine pack;
