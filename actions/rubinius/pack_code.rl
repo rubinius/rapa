@@ -18,15 +18,15 @@
 #include "state.hpp"
 #include "vm.hpp"
 
-#include "builtin/array.hpp"
-#include "builtin/byte_array.hpp"
-#include "builtin/class.hpp"
-#include "builtin/encoding.hpp"
-#include "builtin/exception.hpp"
-#include "builtin/float.hpp"
-#include "builtin/module.hpp"
-#include "builtin/object.hpp"
-#include "builtin/string.hpp"
+#include "class/array.hpp"
+#include "class/byte_array.hpp"
+#include "class/class.hpp"
+#include "class/encoding.hpp"
+#include "class/exception.hpp"
+#include "class/float.hpp"
+#include "class/module.hpp"
+#include "class/object.hpp"
+#include "class/string.hpp"
 
 #ifdef RBX_WINDOWS
 #include <malloc.h>

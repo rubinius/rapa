@@ -28,19 +28,19 @@ namespace :build do
     desc "Generate Array#pack primitives for Rubinius"
     task :pack do
       input  = "#{DIR}/actions/rubinius/pack_code.rl"
-      output = "#{OUT_DIR}/machine/builtin/pack.cpp"
+      output = "#{OUT_DIR}/machine/class/pack.cpp"
 
       sh "#{rubinius_ragel} -o #{output} #{input}"
-      remove_line_references output, "machine/builtin/pack.cpp"
+      remove_line_references output, "machine/class/pack.cpp"
     end
 
     desc "Generate String#unpack primitives for Rubinius"
     task :unpack do
       input  = "#{DIR}/actions/rubinius/unpack_code.rl"
-      output = "#{OUT_DIR}/machine/builtin/unpack.cpp"
+      output = "#{OUT_DIR}/machine/class/unpack.cpp"
 
       sh "#{rubinius_ragel} -o #{output} #{input}"
-      remove_line_references output, "machine/builtin/unpack.cpp"
+      remove_line_references output, "machine/class/unpack.cpp"
     end
   end
 end
