@@ -177,7 +177,7 @@
   }
 
   action string_append {
-    if(CBOOL(string_value->tainted_p(state))) tainted = true;
+    if(string_value->tainted_p()) tainted = true;
     native_int size = string_value->byte_size();
     if(rest) count = size;
     if(count <= size) {

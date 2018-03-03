@@ -654,7 +654,7 @@ namespace rubinius {
     str.reserve(array_size * 4);
 
     if(directives->byte_size() == 0) ascii_encoding = true;
-    if(CBOOL(directives->tainted_p(state))) tainted = true;
+    if(directives->tainted_p()) tainted = true;
 %%{
 
   machine pack;
