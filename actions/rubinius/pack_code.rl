@@ -228,11 +228,11 @@ namespace rubinius {
 #define b64_uu_byte4(t, b)      t[077 & b[2]];
 
     void b64_uu_encode(String* s, std::string& str,
-                       native_int count, native_int count_flag,
+                       intptr_t count, intptr_t count_flag,
                        const char* table, int padding, bool encode_size)
     {
       char *buf = ALLOCA_N(char, count * 4 / 3 + 6);
-      native_int i, chars, line, total = s->byte_size();
+      intptr_t i, chars, line, total = s->byte_size();
       uint8_t* b = s->byte_address();
 
       for(i = 0; total > 0; i = 0, total -= line) {
@@ -350,13 +350,13 @@ namespace rubinius {
       }
     }
 
-    inline native_int bit_extra(String* s, bool rest, native_int& count) {
-      native_int extra = 0;
+    inline intptr_t bit_extra(String* s, bool rest, intptr_t& count) {
+      intptr_t extra = 0;
 
       if(rest) {
         count = s->byte_size();
       } else {
-        native_int size = s->byte_size();
+        intptr_t size = s->byte_size();
         if(count > size) {
           extra = (count - size + 1) / 2;
           count = size;
@@ -366,11 +366,11 @@ namespace rubinius {
       return extra;
     }
 
-    void bit_high(String* s, std::string& str, native_int count) {
+    void bit_high(String* s, std::string& str, intptr_t count) {
       uint8_t* b = s->byte_address();
       int byte = 0;
 
-      for(native_int i = 0; i++ < count; b++) {
+      for(intptr_t i = 0; i++ < count; b++) {
         byte |= *b & 1;
         if(i & 7) {
           byte <<= 1;
@@ -386,11 +386,11 @@ namespace rubinius {
       }
     }
 
-    void bit_low(String* s, std::string& str, native_int count) {
+    void bit_low(String* s, std::string& str, intptr_t count) {
       uint8_t* b = s->byte_address();
       int byte = 0;
 
-      for(native_int i = 0; i++ < count; b++) {
+      for(intptr_t i = 0; i++ < count; b++) {
         if(*b & 1)
           byte |= 128;
 
@@ -408,13 +408,13 @@ namespace rubinius {
       }
     }
 
-    inline native_int hex_extra(String* s, bool rest, native_int& count) {
-      native_int extra = 0;
+    inline intptr_t hex_extra(String* s, bool rest, intptr_t& count) {
+      intptr_t extra = 0;
 
       if(rest) {
         count = s->byte_size();
       } else {
-        native_int size = s->byte_size();
+        intptr_t size = s->byte_size();
         if(count > size) {
           extra = (count + 1) / 2 - (size + 1) / 2;
           count = size;
@@ -424,11 +424,11 @@ namespace rubinius {
       return extra;
     }
 
-    void hex_high(String* s, std::string& str, native_int count) {
+    void hex_high(String* s, std::string& str, intptr_t count) {
       uint8_t* b = s->byte_address();
       int byte = 0;
 
-      for(native_int i = 0; i++ < count; b++) {
+      for(intptr_t i = 0; i++ < count; b++) {
         if(ISALPHA(*b)) {
           byte |= ((*b & 15) + 9) & 15;
         } else {
@@ -448,11 +448,11 @@ namespace rubinius {
       }
     }
 
-    void hex_low(String* s, std::string& str, native_int count) {
+    void hex_low(String* s, std::string& str, intptr_t count) {
       uint8_t* b = s->byte_address();
       int byte = 0;
 
-      for(native_int i = 0; i++ < count; b++) {
+      for(intptr_t i = 0; i++ < count; b++) {
         if(ISALPHA(*b)) {
           byte |= (((*b & 15) + 9) & 15) << 4;
         } else {
@@ -475,7 +475,7 @@ namespace rubinius {
     ByteArray* prepare_directives(STATE, String* directives,
                                   const char** p, const char** pe)
     {
-      native_int size = directives->byte_size();
+      intptr_t size = directives->byte_size();
       ByteArray* ba = ByteArray::create_pinned(state, size + 1);
       char* b = reinterpret_cast<char*>(ba->raw_bytes());
       char* d = reinterpret_cast<char*>(directives->byte_address());
@@ -509,7 +509,7 @@ namespace rubinius {
       return ba;
     }
 
-    void exceeds_length_of_string(STATE, native_int count) {
+    void exceeds_length_of_string(STATE, intptr_t count) {
       std::ostringstream msg;
       msg << "X" << count << " exceeds length of string";
       Exception::raise_argument_error(state, msg.str().c_str());
@@ -636,11 +636,11 @@ namespace rubinius {
     Array* self = this;
     OnStack<2> sv(state, self, d);
 
-    native_int array_size = self->size();
-    native_int index = 0;
-    native_int count UNUSED = 0;
-    native_int count_flag = -1;
-    native_int stop = 0;
+    intptr_t array_size = self->size();
+    intptr_t index = 0;
+    intptr_t count UNUSED = 0;
+    intptr_t count_flag = -1;
+    intptr_t stop = 0;
     bool rest UNUSED = false;
     bool tainted UNUSED = false;
     bool ascii_encoding = false;

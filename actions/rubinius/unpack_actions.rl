@@ -336,7 +336,7 @@
     String* string;
 
     if(count > 0) {
-      native_int i;
+      intptr_t i;
       for(i = count; i > 0; i--) {
         uint8_t c = bytes[i-1];
         if(c != ' ' && c != '\0')
@@ -358,7 +358,7 @@
   }
 
   action Z {
-    native_int c;
+    intptr_t c;
     for(c = 0; c < count; c++) {
       if(bytes[c] == '\0') break;
     }

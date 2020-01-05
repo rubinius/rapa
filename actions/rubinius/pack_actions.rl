@@ -133,7 +133,7 @@
   action X {
     if(rest) count = 0;
 
-    if(count > (native_int)str.size()) {
+    if(count > (intptr_t)str.size()) {
       pack::exceeds_length_of_string(state, count);
     }
 
@@ -149,7 +149,7 @@
   action at {
     if(rest) count = 1;
 
-    if(count > (native_int)str.size()) {
+    if(count > (intptr_t)str.size()) {
       str.append(count - str.size(), '\0');
     } else {
       str.resize(count);
@@ -178,7 +178,7 @@
 
   action string_append {
     if(string_value->tainted_p()) tainted = true;
-    native_int size = string_value->byte_size();
+    intptr_t size = string_value->byte_size();
     if(rest) count = size;
     if(count <= size) {
       str.append((const char*)string_value->byte_address(), count);
@@ -221,28 +221,28 @@
   # Encodings
 
   action B {
-    native_int extra = pack::bit_extra(string_value, rest, count);
+    intptr_t extra = pack::bit_extra(string_value, rest, count);
 
     pack::bit_high(string_value, str, count);
     if(extra > 0) str.append(extra, '\0');
   }
 
   action b {
-    native_int extra = pack::bit_extra(string_value, rest, count);
+    intptr_t extra = pack::bit_extra(string_value, rest, count);
 
     pack::bit_low(string_value, str, count);
     if(extra > 0) str.append(extra, '\0');
   }
 
   action H {
-    native_int extra = pack::hex_extra(string_value, rest, count);
+    intptr_t extra = pack::hex_extra(string_value, rest, count);
 
     pack::hex_high(string_value, str, count);
     if(extra > 0) str.append(extra, '\0');
   }
 
   action h {
-    native_int extra = pack::hex_extra(string_value, rest, count);
+    intptr_t extra = pack::hex_extra(string_value, rest, count);
 
     pack::hex_low(string_value, str, count);
     if(extra > 0) str.append(extra, '\0');
